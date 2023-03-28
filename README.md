@@ -103,7 +103,7 @@ Please take a look at the official [Documentation](https://doc.dovecot.org/confi
 
 2. Create a system user
 ```
-# useradd -M --gid pwch --password "!" --shell /sbin/nologin --system
+# useradd --gid pwch --no-create-home --shell /sbin/nologin --system pwch
 ```
 
 3. Create the config directory
