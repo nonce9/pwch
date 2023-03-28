@@ -8,6 +8,8 @@ installation and is (at the moment) suitable for a couple of mail users only.
 I wrote this for my own private mail server setup. Read ahead to determine if
 it suits your needs.
 
+-----
+
 ## WARNING
 
 Try this software with great care only. DO NOT simply deploy it on your
@@ -20,6 +22,8 @@ on their own and encrypt their mailboxes.
 forever.
 
 Feedback is much appreciated.
+
+-----
 
 ## What it does
 
@@ -48,9 +52,15 @@ reencrypt your mailbox and terminate all existing IMAP sessions for your user.
 This wrapper script executes doveadm commands. That is why dovecot/doveadm has
 to be installed on the same host.
 
+**Attention*: The wrapper script needs the setuid bit set.
+
+-----
+
 ## Roadmap
 
 - [ ] Support simultaneous password changes (multi-user support)
+
+-----
 
 ## Requirements
 
@@ -81,16 +91,18 @@ plugin {
 
 Please take a look at the official [Documentation](https://doc.dovecot.org/configuration_manual/mail_crypt_plugin/)
 
+-----
+
 ## How to deploy
 
 1. Create a system group
 ```
-
+# groupadd --system pwch
 ```
 
 2. Create a system user
 ```
-
+# useradd -M --gid pwch --password "!" --shell /sbin/nologin --system
 ```
 
 3. Create the config directory
@@ -101,15 +113,14 @@ Please take a look at the official [Documentation](https://doc.dovecot.org/confi
 4. Create the config file at `/etc/pwch/config.yml`. Set owner and group to `pwch`
 and remove all permissions to others.
 
-5. Create the html assets directory
+5. Create the html assets directory and copy the [html assets](html/) to this directory.
 ```
 # mkdir /usr/local/src/pwch
 ```
-And copy the [html assets](html/) to this directory.
 
 6. Copy the pwch binary to `/usr/local/bin/` and run `chmod +x` to make it executable.
 
-7. Copy the doveadm_wrapper binary to `/usr/local/bin/` and run `chmod 4750` to set the setuid bit.
+7. Copy the doveadm_wrapper binary to `/usr/local/bin/` and first run `chown root:pwch`, then run `chmod 4750` to set the setuid bit.
 
 8. Copy the [systemd unit file](config/pwch.service) to `/etc/systemd/system/` and run `systemctl daemon-reload`
 
