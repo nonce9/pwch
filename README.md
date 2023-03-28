@@ -15,7 +15,7 @@ it suits your needs.
 Try this software with great care only. DO NOT simply deploy it on your
 production mail server without these considerations:
 
-- This software is currently in alpha status.
+- This software is currently in alpha status and hardly tested.
 - I'm not a seasoned software dev. This is really a beginner's project. I'm a 
 sysadmin who was looking for a solution to allow users to change their passwords 
 on their own and encrypt their mailboxes.
