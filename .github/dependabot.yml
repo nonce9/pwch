@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "daily"
 
-- package-ecosystem: "gomod"
+  - package-ecosystem: "gomod"
     directory: "doveadm_wrapper"
     schedule:
       interval: "daily"
