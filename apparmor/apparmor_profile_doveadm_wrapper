@@ -1,0 +1,18 @@
+# Last Modified: Sun Jan  1 13:27:38 2023
+include <tunables/global>
+
+# vim:syntax=apparmor
+# AppArmor policy for doveadm_wrapper
+# AppArmor policy for pwch
+# pwch apparmor profile
+# No template variables specified
+
+
+/usr/local/bin/doveadm_wrapper {
+  include <abstractions/base>
+
+  /usr/bin/doveadm Ux,
+  owner /sys/kernel/mm/transparent_hugepage/hpage_pmd_size r,
+  owner /usr/local/bin/doveadm_wrapper mr,
+
+}

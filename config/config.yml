@@ -1,0 +1,29 @@
+---
+domain: example.com
+url_prefix: /selfservice
+assets_path: /usr/local/src/pwch
+
+server:
+  listen_address: 127.0.0.1
+  port: 8080
+
+db:
+  host: /run/postgresql
+  db_name: vmail
+  user: vmail
+  password: vmail_password
+  ssl_mode: disable
+
+bcrypt:
+  cost: 14
+
+smtp:
+  host: example.com
+  port: 587
+  login_user: noreply@example.com
+  login_password: noreply_password
+  sender: PWCH <noreply@example.com
+
+password_policy:
+  min_length: 12
+  max_length: 128
