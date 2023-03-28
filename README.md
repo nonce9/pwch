@@ -52,7 +52,7 @@ reencrypt your mailbox and terminate all existing IMAP sessions for your user.
 This wrapper script executes doveadm commands. That is why dovecot/doveadm has
 to be installed on the same host.
 
-**Attention*: The wrapper script needs the setuid bit set.
+__Attention__: The wrapper script needs the setuid bit set.
 
 -----
 
