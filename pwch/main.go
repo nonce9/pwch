@@ -473,7 +473,7 @@ func main() {
 	mux.HandleFunc(cfg.URLPrefix+"/changePassword", passwordChangeHandler)
 	mux.HandleFunc(cfg.URLPrefix+"/submitPassword", passwordSubmitHandler)
 
-	log.Print("pwch 0.1.0")
+	log.Print("pwch 0.1.1")
 	log.Print("INFO: Listening on " + cfg.Server.ListenAddress + ":" + cfg.Server.Port)
 	go func() {
 		log.Fatal(http.ListenAndServe(cfg.Server.ListenAddress+":"+cfg.Server.Port, mux))
