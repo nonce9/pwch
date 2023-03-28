@@ -122,7 +122,7 @@ And copy the [html assets](html/) to this directory.
 ### AppArmor (Optional)
 
 1. Copy the AppArmor policies to `/etc/apparmor.d/usr.local.bin.pwch` and
-`/etc/apparmor.d/usr.local.bin.doveadm_Wrapper`
+`/etc/apparmor.d/usr.local.bin.doveadm_wrapper`
 
 2. Load the policies with
 ```
