@@ -21,6 +21,37 @@ forever.
 
 Feedback is much appreciated.
 
+## What it does
+
+- checks whether an email address exists in the users database
+- sends one time links to change the password to existing email addresses
+- enforces configurable password policy
+- implements naive rate limiting when sending one time links
+- encrypts mailboxes with per user keys derived from their password
+
+## What it does not
+
+- give an attacker hints whether an email address exists in the database
+- there is no 'Forgot password' option. It's not possible by design. If you
+forget your password you will need to reset it manually in the database. All
+stored emails will be lost then.
+
+## How it works
+
+When a user enters an email address in the selfservice portal, pwch checks
+whether the address is present in the database. If it is, the given address 
+will receive an email containing a one time link which is valid for 10 minutes.
+
+You still need your current password to set a new one. If all checks are passed
+pwch will directly change the password in the database, run a wrapper script to 
+reencrypt your mailbox and terminate all existing IMAP sessions for your user. 
+This wrapper script executes doveadm commands. That is why dovecot/doveadm has
+to be installed on the same host.
+
+## Roadmap
+
+- [ ] Support simultaneous password changes (multi-user support)
+
 ## Requirements
 
 - Local dovecot installation with doveadm
@@ -28,11 +59,11 @@ Feedback is much appreciated.
 - SMTP server with STARTTLS enabled
 - Optional: AppArmor
 
-## Database schema requirements
+### Database schema requirements
 
 Take a look at [postgres.sql](config/postgres.sql) to set up your database.
 
-## Dovecot requirements
+### Dovecot requirements
 
 See [dovecot-sql.conf](config/dovecot-sql.conf) to configure dovecot SQL queries.
 
@@ -50,33 +81,51 @@ plugin {
 
 Please take a look at the official [Documentation](https://doc.dovecot.org/configuration_manual/mail_crypt_plugin/)
 
-## What it does
+## How to deploy
 
-- checks whether an email address exists in the users database
-- sends one time links to change the password to existing email addresses
-- enforces configurable password policy
-- implements naive rate limiting when sending one time links
-- encrypts mailboxes with per user keys derived from their password
+1. Create a system group
+```
 
-## What it does not
+```
 
-- give an attacker hints whether an email address exists in the database
-- there is no 'Forgot password' option. It's not possible by design. If you
-forget your password you will need to reset it manually in the database. All
-stored emails will be lost then.
+2. Create a system user
+```
 
-## Roadmap
+```
 
-- [ ] Support simultaneous password changes (multi-user support)
+3. Create the config directory
+```
+# mkdir /etc/pwch
+```
 
-## How it works
+4. Create the config file at `/etc/pwch/config.yml`. Set owner and group to `pwch`
+and remove all permissions to others.
 
-When a user enters an email address in the selfservice portal, pwch checks
-whether the address is present in the database. If it is, the given address 
-will receive an email containing a one time link which is valid for 10 minutes.
+5. Create the html assets directory
+```
+# mkdir /usr/local/src/pwch
+```
+And copy the [html assets](html/) to this directory.
 
-You still need your current password to set a new one. If all checks are passed
-pwch will directly change the password in the database, run a wrapper script to 
-reencrypt your mailbox and terminate all existing IMAP sessions for your user. 
-This wrapper script executes doveadm commands. That is why dovecot/doveadm has
-to be installed on the same host.
+6. Copy the pwch binary to `/usr/local/bin/` and run `chmod +x` to make it executable.
+
+7. Copy the doveadm_wrapper binary to `/usr/local/bin/` and run `chmod 4750` to set the setuid bit.
+
+8. Copy the [systemd unit file](config/pwch.service) to `/etc/systemd/system/` and run `systemctl daemon-reload`
+
+9. Enable and start the service
+```
+# systemctl enable pwch.service
+# systemctl start pwch.service
+```
+
+### AppArmor (Optional)
+
+1. Copy the AppArmor policies to `/etc/apparmor.d/usr.local.bin.pwch` and
+`/etc/apparmor.d/usr.local.bin.doveadm_Wrapper`
+
+2. Load the policies with
+```
+apparmor_parser -r /etc/apparmor.d/usr.local.bin.pwch /etc/apparmor.d/usr.local.bin.doveadm_wrapper
+```
+
