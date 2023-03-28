@@ -132,6 +132,8 @@ and remove all permissions to others.
 
 ### AppArmor (Optional)
 
+The pwch policy allows PostgreSQL unix socket connections only.
+
 1. Copy the AppArmor policies to `/etc/apparmor.d/usr.local.bin.pwch` and
 `/etc/apparmor.d/usr.local.bin.doveadm_wrapper`
 
