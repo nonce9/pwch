@@ -1,8 +1,8 @@
 # pwch (/piːwɪtʃ/)
 
-pwch is a simple Go service for small mail server setups. It will enable your
-users to change their password on their own via a pure html selfservice portal
-and encrypt dovecot mailboxes with per user keys. 
+pwch (short for *password change*) is a simple Go service for small mail server setups.
+It will enable your users to change their password on their own via a pure html
+selfservice portal and encrypt dovecot mailboxes with per user keys.
 It's suppposed to be run on the same host as your dovecot IMAP server
 installation and is (at the moment) suitable for a couple of mail users only.
 I wrote this for my own private mail server setup. Read ahead to determine if
