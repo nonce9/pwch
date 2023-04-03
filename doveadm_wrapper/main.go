@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 	"syscall"
 )
 
+const version = "0.1.1"
 const allowedEmail = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.@"
 const allowedPassword = "0123456789abcdef"
 
@@ -31,6 +33,27 @@ func errorHandler(err error) {
 }
 
 func main() {
+	if os.Args[1] == "--version" {
+		buildInfo, ok := debug.ReadBuildInfo()
+		if !ok {
+			panic("Can't read BuildInfo")
+		}
+
+		fmt.Printf("pwch version: %s\n", version)
+		fmt.Println("Built with:")
+		fmt.Printf("  %s\n", buildInfo.GoVersion)
+
+		fmt.Println("Dependencies:")
+		if len(buildInfo.Deps) > 0 {
+			for _, dep := range buildInfo.Deps {
+				fmt.Printf("  %s %s\n", dep.Path, dep.Version)
+			}
+		} else {
+			fmt.Println("  no external dependencies")
+		}
+		os.Exit(0)
+	}
+
 	if os.Args[1] != "" {
 		behavior := os.Args[1]
 
