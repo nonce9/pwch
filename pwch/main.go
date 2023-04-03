@@ -13,6 +13,7 @@ import (
 	"net/smtp"
 	"os"
 	"os/exec"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const version = "0.1.1"
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const lowercase = "abcdefghijklmnopqrstuvwxyz"
 const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -461,6 +463,30 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// print pwch version and build info
+	if os.Args[1] == "--version" {
+		buildInfo, ok := debug.ReadBuildInfo()
+		if !ok {
+			panic("Can't read BuildInfo")
+		}
+
+		fmt.Println("pwch version:")
+		fmt.Printf("  %s\n", version)
+
+		fmt.Println("Built with:")
+		fmt.Printf("  %s\n", buildInfo.GoVersion)
+
+		fmt.Println("Dependencies:")
+		if len(buildInfo.Deps) > 0 {
+			for _, dep := range buildInfo.Deps {
+				fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
+			}
+		} else {
+			fmt.Println("  no external dependencies")
+		}
+		os.Exit(0)
+	}
+
 	readFile(&cfg)
 
 	rand.Seed(time.Now().UnixNano())
@@ -473,7 +499,7 @@ func main() {
 	mux.HandleFunc(cfg.URLPrefix+"/changePassword", passwordChangeHandler)
 	mux.HandleFunc(cfg.URLPrefix+"/submitPassword", passwordSubmitHandler)
 
-	log.Print("pwch 0.1.1")
+	log.Printf("pwch %s", version)
 	log.Print("INFO: Listening on " + cfg.Server.ListenAddress + ":" + cfg.Server.Port)
 	go func() {
 		log.Fatal(http.ListenAndServe(cfg.Server.ListenAddress+":"+cfg.Server.Port, mux))
