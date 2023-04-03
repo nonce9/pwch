@@ -33,20 +33,23 @@ func errorHandler(err error) {
 }
 
 func main() {
+	// print pwch version and build info
 	if os.Args[1] == "--version" {
 		buildInfo, ok := debug.ReadBuildInfo()
 		if !ok {
 			panic("Can't read BuildInfo")
 		}
 
-		fmt.Printf("pwch version: %s\n", version)
+		fmt.Println("pwch version:")
+		fmt.Printf("  %s\n", version)
+
 		fmt.Println("Built with:")
 		fmt.Printf("  %s\n", buildInfo.GoVersion)
 
 		fmt.Println("Dependencies:")
 		if len(buildInfo.Deps) > 0 {
 			for _, dep := range buildInfo.Deps {
-				fmt.Printf("  %s %s\n", dep.Path, dep.Version)
+				fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
 			}
 		} else {
 			fmt.Println("  no external dependencies")
