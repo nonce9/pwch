@@ -31,6 +31,7 @@ const lowercase = "abcdefghijklmnopqrstuvwxyz"
 const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 
+var configPath = "/etc/pwch/config"
 var cfg config
 var lastEmailSent time.Time
 
@@ -76,9 +77,38 @@ type url struct {
 	Domain   string
 }
 
+func printVersion() {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		panic("Can't read BuildInfo")
+	}
+
+	fmt.Println("pwch version:")
+	fmt.Printf("  %s\n", version)
+
+	fmt.Println("Built with:")
+	fmt.Printf("  %s\n", buildInfo.GoVersion)
+
+	fmt.Println("Dependencies:")
+	if len(buildInfo.Deps) > 0 {
+		for _, dep := range buildInfo.Deps {
+			fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
+		}
+	} else {
+		fmt.Println("  no external dependencies")
+	}
+}
+
+func printHelp() {
+	fmt.Println(`Possible arguments:
+	--config		Changes default path from where to read the config file.
+	--help			Print this help statement.
+	--version		Print version and build info.`)
+}
+
 // reads config file
 func readFile(cfg *config) {
-	file, err := os.Open("/etc/pwch/config.yml")
+	file, err := os.Open(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -465,27 +495,20 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// print pwch version and build info
 	if len(os.Args) > 1 {
-		if os.Args[1] == "--version" {
-			buildInfo, ok := debug.ReadBuildInfo()
-			if !ok {
-				panic("Can't read BuildInfo")
+		for _, arg := range os.Args {
+			if arg == "--help" {
+				printHelp()
+				os.Exit(0)
 			}
-
-			fmt.Println("pwch version:")
-			fmt.Printf("  %s\n", version)
-
-			fmt.Println("Built with:")
-			fmt.Printf("  %s\n", buildInfo.GoVersion)
-
-			fmt.Println("Dependencies:")
-			if len(buildInfo.Deps) > 0 {
-				for _, dep := range buildInfo.Deps {
-					fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
-				}
-			} else {
-				fmt.Println("  no external dependencies")
+		}
+		for _, arg := range os.Args {
+			if arg == "--version" {
+				printVersion()
+				os.Exit(0)
 			}
-			os.Exit(0)
+		}
+		if os.Args[1] == "--config" {
+			configPath = os.Args[2]
 		}
 	}
 
