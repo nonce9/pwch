@@ -27,3 +27,6 @@ smtp:
 password_policy:
   min_length: 12
   max_length: 128
+
+otl:
+  valid_for: 10m
