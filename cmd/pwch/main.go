@@ -64,6 +64,9 @@ type config struct {
 		MinLength int `yaml:"min_length"`
 		MaxLength int `yaml:"max_length"`
 	} `yaml:"password_policy"`
+	OTL struct {
+		ValidFor time.Duration `yaml:"valid_for"`
+	} `yaml:"otl"`
 }
 
 var oneTimeURLs = struct {
@@ -534,7 +537,7 @@ func main() {
 	for {
 		<-ticker.C
 		for k, v := range oneTimeURLs.m {
-			if time.Now().Sub(v) > (10 * time.Minute) {
+			if time.Now().Sub(v) > cfg.OTL.ValidFor {
 				deleteFromHashMap(oneTimeURLs.m, k)
 				log.Print("INFO: Deleted expired route " + k + " from map")
 			}
