@@ -18,6 +18,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -61,8 +62,12 @@ type config struct {
 		Sender        string `yaml:"sender"`
 	} `yaml:"smtp"`
 	PasswordPolicy struct {
-		MinLength int `yaml:"min_length"`
-		MaxLength int `yaml:"max_length"`
+		MinLength   int  `yaml:"min_length"`
+		MaxLength   int  `yaml:"max_length"`
+		LowerCase   bool `yaml:"lower_case"`
+		UpperCase   bool `yaml:"upper_case"`
+		Digits      bool `yaml:"digits"`
+		SepcialChar bool `yaml:"special_char"`
 	} `yaml:"password_policy"`
 	OTL struct {
 		ValidFor time.Duration `yaml:"valid_for"`
@@ -74,10 +79,15 @@ var oneTimeURLs = struct {
 	m map[string]time.Time
 }{m: make(map[string]time.Time)}
 
-type url struct {
+type changePasswordTemplateData struct {
 	Token    string
 	Username string
 	Domain   string
+	Length   int
+	Lower    bool
+	Upper    bool
+	Digit    bool
+	Special  bool
 }
 
 func printVersion() {
@@ -157,28 +167,63 @@ func templatePasswordErrorPage(w http.ResponseWriter, errorMessage string) {
 }
 
 func enforcePasswordPolicy(password string) (bool, string) {
-	switch {
 
-	case len(password) < cfg.PasswordPolicy.MinLength:
+	// initialize with opposite of config value
+	// policies set to "false" will therefore init with "true" and will not change
+	hasLower := !cfg.PasswordPolicy.LowerCase
+	hasUpper := !cfg.PasswordPolicy.UpperCase
+	hasNumber := !cfg.PasswordPolicy.Digits
+	hasSpecial := !cfg.PasswordPolicy.SepcialChar
+	errorMessage := "Undefined error"
+
+	if len(password) < cfg.PasswordPolicy.MinLength {
 		return false, "Please enter at least a " +
 			strconv.Itoa(cfg.PasswordPolicy.MinLength) + " character long password"
+	}
 
-	case len(password) > cfg.PasswordPolicy.MaxLength:
+	if len(password) > cfg.PasswordPolicy.MaxLength {
 		return false, "Please enter at max a " +
 			strconv.Itoa(cfg.PasswordPolicy.MaxLength) + " character long password"
+	}
 
-	case !strings.ContainsAny(password, lowercase):
-		return false, "Please enter at least one lower case character"
+	for _, char := range password {
+		switch {
+		case unicode.IsNumber(char):
+			hasNumber = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsPunct(char):
+			hasSpecial = true
+		case unicode.IsSpace(char):
+			hasSpecial = true
+		case unicode.IsSymbol(char):
+			hasSpecial = true
+		}
+	}
 
-	case !strings.ContainsAny(password, uppercase):
-		return false, "Please enter at least one upper case character"
-
-	case !strings.ContainsAny(password, digits):
-		return false, "Please enter at least one digit"
-
-	default:
+	if hasLower && hasUpper && hasNumber && hasSpecial {
 		return true, "Success"
 	}
+
+	if !hasLower {
+		errorMessage = "Please enter at least one lower case character"
+	}
+
+	if !hasUpper {
+		errorMessage = "Please enter at least one upper case character"
+	}
+
+	if !hasNumber {
+		errorMessage = "Please enter at least one digit"
+	}
+
+	if !hasSpecial {
+		errorMessage = "Please enter at least one special character"
+	}
+
+	return false, errorMessage
 }
 
 func sendOneTimeLink(email string) {
@@ -376,12 +421,6 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	domain := r.URL.Query().Get("domain")
 
-	data := url{
-		Token:    token,
-		Username: username,
-		Domain:   domain,
-	}
-
 	var url = "changePassword?token=" + token +
 		"&username=" + username +
 		"&domain=" + domain
@@ -390,6 +429,17 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		fmt.Fprintf(w, "Link expired")
 		return
+	}
+
+	data := changePasswordTemplateData{
+		Token:    token,
+		Username: username,
+		Domain:   domain,
+		Length:   cfg.PasswordPolicy.MinLength,
+		Lower:    cfg.PasswordPolicy.LowerCase,
+		Upper:    cfg.PasswordPolicy.UpperCase,
+		Digit:    cfg.PasswordPolicy.Digits,
+		Special:  cfg.PasswordPolicy.SepcialChar,
 	}
 
 	tmpl, err := template.ParseFiles(cfg.AssetsPath + "/changePassword.html")

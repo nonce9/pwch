@@ -27,6 +27,10 @@ smtp:
 password_policy:
   min_length: 12
   max_length: 128
+  lower_case: true
+  upper_case: true
+  digits: true
+  special_char: true
 
 otl:
   valid_for: 10m
