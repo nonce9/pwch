@@ -26,7 +26,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const version = "0.3.0"
+const version = "0.3.1"
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const lowercase = "abcdefghijklmnopqrstuvwxyz"
 const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
