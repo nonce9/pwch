@@ -1,6 +1,7 @@
 # pwch (/piːwɪtʃ/)
 
 ![build](https://github.com/nonce9/pwch/actions/workflows/build.yml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nonce9/pwch/v2)](https://goreportcard.com/report/github.com/nonce9/pwch/v2)
 
 pwch (short for *password change*) is a simple Go service for small mail server setups.
 It will enable your users to change their password on their own via a pure html
