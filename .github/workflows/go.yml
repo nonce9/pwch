@@ -21,10 +21,17 @@ jobs:
           go-version: 1.19
 
       - name: Install dependencies
+        working-directory: cmd/pwch
         run: go get .
 
-      - name: Build
-        run: go build -v ./...
+      - name: Build pwch
+        working-directory: cmd/pwch
+        run: go build -v
 
-      - name: Test
-        run: go test -v ./...
+      - name: Test pwch
+        working-directory: cmd/pwch
+        run: go test -v
+
+      - name: Build doveadm_wrapper
+        working-directory: cmd/doveadm_wrapper
+        run: go build -v
