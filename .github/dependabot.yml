@@ -2,11 +2,6 @@
 version: 2
 updates:
   - package-ecosystem: "gomod"
-    directory: "cmd/pwch"
-    schedule:
-      interval: "daily"
-
-  - package-ecosystem: "gomod"
-    directory: "cmd/doveadm_wrapper"
+    directory: "/"
     schedule:
       interval: "daily"
