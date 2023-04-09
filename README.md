@@ -1,5 +1,7 @@
 # pwch (/piːwɪtʃ/)
 
+![build](https://github.com/nonce9/pwch/actions/workflows/go.yml/badge.svg)
+
 pwch (short for *password change*) is a simple Go service for small mail server setups.
 It will enable your users to change their password on their own via a pure html
 selfservice portal and encrypt dovecot mailboxes with per user keys.
