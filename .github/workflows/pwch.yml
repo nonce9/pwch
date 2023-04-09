@@ -1,5 +1,5 @@
 ---
-name: Go
+name: pwch
 
 on:
   workflow_dispatch:
