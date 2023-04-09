@@ -79,10 +79,15 @@ var oneTimeURLs = struct {
 	m map[string]time.Time
 }{m: make(map[string]time.Time)}
 
-type url struct {
+type changePasswordTemplateData struct {
 	Token    string
 	Username string
 	Domain   string
+	Length   int
+	Lower    bool
+	Upper    bool
+	Digit    bool
+	Special  bool
 }
 
 func printVersion() {
@@ -416,12 +421,6 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	domain := r.URL.Query().Get("domain")
 
-	data := url{
-		Token:    token,
-		Username: username,
-		Domain:   domain,
-	}
-
 	var url = "changePassword?token=" + token +
 		"&username=" + username +
 		"&domain=" + domain
@@ -430,6 +429,17 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		fmt.Fprintf(w, "Link expired")
 		return
+	}
+
+	data := changePasswordTemplateData{
+		Token:    token,
+		Username: username,
+		Domain:   domain,
+		Length:   cfg.PasswordPolicy.MinLength,
+		Lower:    cfg.PasswordPolicy.LowerCase,
+		Upper:    cfg.PasswordPolicy.UpperCase,
+		Digit:    cfg.PasswordPolicy.Digits,
+		Special:  cfg.PasswordPolicy.SepcialChar,
 	}
 
 	tmpl, err := template.ParseFiles(cfg.AssetsPath + "/changePassword.html")
