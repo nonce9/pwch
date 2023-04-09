@@ -79,6 +79,12 @@ var oneTimeURLs = struct {
 	m map[string]time.Time
 }{m: make(map[string]time.Time)}
 
+type mailUser struct {
+	Enabled  bool
+	Username string
+	Domain   string
+}
+
 type changePasswordTemplateData struct {
 	Token    string
 	Username string
@@ -226,23 +232,21 @@ func enforcePasswordPolicy(password string) (bool, string) {
 	return false, errorMessage
 }
 
-func sendOneTimeLink(email string) {
+func sendOneTimeLink(username, domain string) {
 	var token = genRandomString(64)
 
 	loginUser := cfg.SMTP.LoginUser
 	loginPassword := cfg.SMTP.LoginPassword
 	from := cfg.SMTP.Sender
-	to := []string{email}
+	to := []string{username + "@" + domain}
 	host := cfg.SMTP.Host
 	port := cfg.SMTP.Port
 
-	components := strings.Split(email, "@")
-	username, domain := components[0], components[1]
 	accessString := "changePassword?token=" + token +
 		"&username=" + username + "&domain=" + domain
 
 	message := []byte("From: " + from + "\r\n" +
-		"To: " + email + "\r\n" +
+		"To: " + username + "@" + domain + "\r\n" +
 		"Subject: Password change requested\r\n" +
 		"\r\n" +
 		"Follow this link to change your password:\r\n" +
@@ -263,7 +267,7 @@ func sendOneTimeLink(email string) {
 	}
 
 	addToHashMap(oneTimeURLs.m, accessString, time.Now())
-	log.Print("INFO: Sent OTL to " + email)
+	log.Print("INFO: Sent OTL to " + username + "@" + domain)
 }
 
 func connectToDatabase() *sql.DB {
@@ -278,28 +282,37 @@ func connectToDatabase() *sql.DB {
 	return db
 }
 
-func emailEnabled(email string) bool {
+func emailEnabled(email string) (bool, mailUser) {
 	components := strings.Split(email, "@")
 	username, domain := components[0], components[1]
 
 	var db = connectToDatabase()
 
-	var enabled bool
-	if err := db.QueryRow("SELECT (enabled = true) FROM accounts WHERE username = $1 AND domain = $2;",
-		username, domain).Scan(&enabled); err != nil {
+	stmt, err := db.Prepare("SELECT username, domain, enabled FROM accounts WHERE username = $1 AND domain = $2;")
+	if err != nil {
+		db.Close()
+		log.Fatal(err)
+	}
+
+	var mailUser mailUser
+
+	err = stmt.QueryRow(username, domain).Scan(&mailUser.Username, &mailUser.Domain, &mailUser.Enabled)
+	if err != nil {
 		if err == sql.ErrNoRows {
 			db.Close()
 			log.Print("INFO: Unknown email address: " + username + "@" + domain)
-			return false
+			return false, mailUser
 		}
+		log.Fatal(err)
 	}
+
 	db.Close()
 
-	if enabled {
+	if mailUser.Enabled {
 		log.Print("INFO: " + username + "@" + domain + " successfully validated")
-		return true
+		return true, mailUser
 	}
-	return false
+	return false, mailUser
 }
 
 func hashPassword(password string) (string, error) {
@@ -410,9 +423,11 @@ func emailSendHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, cfg.URLPrefix+"/emailSent", http.StatusSeeOther)
 
-	if emailEnabled(email) {
+	enabled, mailUser := emailEnabled(email)
+
+	if enabled {
 		lastEmailSent = time.Now()
-		go sendOneTimeLink(email)
+		go sendOneTimeLink(mailUser.Username, mailUser.Domain)
 	}
 }
 
