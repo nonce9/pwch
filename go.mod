@@ -1,4 +1,4 @@
-module nonce.at/pwch/v2
+module github.com/nonce9/pwch/v2
 
 go 1.19
 
