@@ -32,7 +32,7 @@ const lowercase = "abcdefghijklmnopqrstuvwxyz"
 const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const digits = "0123456789"
 
-var configPath = "/etc/pwch/config"
+var configPath = "/etc/pwch/config.yml"
 var cfg config
 var lastEmailSent time.Time
 
