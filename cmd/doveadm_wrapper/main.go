@@ -9,7 +9,7 @@ import (
 	"syscall"
 )
 
-const version = "0.3.1"
+const version = "0.3.2"
 const allowedEmail = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.@"
 const allowedPassword = "0123456789abcdef"
 
