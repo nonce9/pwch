@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"os/exec"
 	"runtime/debug"
@@ -71,14 +73,31 @@ func main() {
 		}
 
 		// reencrypt mailbox
-		if behavior == "swap" && os.Args[2] != "" && os.Args[3] != "" && os.Args[4] != "" &&
-			isAllowed(os.Args[2], allowedEmail) && isAllowed(os.Args[3], allowedPassword) && isAllowed(os.Args[4], allowedPassword) {
+		if behavior == "swap" {
+			var email string
+			var oldHashString string
+			var newHashString string
 
-			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", os.Args[2], "-o", os.Args[3], "-n", os.Args[4])
-			err := cmd.Run()
+			fmt.Scanf("%s", &email)
+			fmt.Scanf("%s", &oldHashString)
+			fmt.Scanf("%s", &newHashString)
+
+			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-U")
+			stdin, err := cmd.StdinPipe()
 			if err != nil {
+				log.Fatal(err)
+			}
+			defer stdin.Close()
+
+			if err = cmd.Start(); err != nil {
 				errorHandler(err)
 			}
+
+			io.WriteString(stdin, oldHashString)
+			io.WriteString(stdin, newHashString)
+
+			cmd.Wait()
+
 			os.Exit(0)
 		}
 	}
