@@ -15,7 +15,7 @@ db:
   ssl_mode: disable
 
 bcrypt:
-  cost: 14
+  cost: 14  # do NOT change after initial setup
 
 smtp:
   host: example.com

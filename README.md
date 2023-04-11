@@ -111,6 +111,9 @@ Please take a look at the official [Documentation](https://doc.dovecot.org/confi
 
 ## How to deploy
 
+You can use [this](https://github.com/nonce9/ansible-role-pwch)
+ansible role to take care of the deployment if you like.
+
 1. Create a system group
 ```
 # groupadd --system pwch
@@ -157,4 +160,31 @@ The pwch policy allows PostgreSQL unix socket connections only.
 ```
 apparmor_parser -r /etc/apparmor.d/usr.local.bin.pwch /etc/apparmor.d/usr.local.bin.doveadm_wrapper
 ```
+
+## Create new mail user
+
+pwch takes care of password changes of existing users. To create new users you
+have to execute these steps manually.
+
+1. Create initial user password
+
+```
+# doveadm pw -s BLF-CRYPT -r 14  // or whatever cost you have set
+```
+
+__ATTENTION__: Remove the `{BLF-CRYPT}` prefix before inserting the password into the database.
+
+When the user accounts is present in the database, run:
+
+```
+# doveadm -o plugin/mail_crypt_private_password=<sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
+```
+
+To calculate the sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be activated)
+
+```
+select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
+```
+
+When the mailbox is encrypted tell your new user to change the password.
 
