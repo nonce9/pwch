@@ -4,11 +4,6 @@
 
 Currently only the latest available release will be supported.
 
-| Version   | Supported          |
-| --------- | ------------------ |
-|   0.3.1   | :white_check_mark: |
-| < 0.3.1   | :x:                |
-
 ## Reporting a Vulnerability
 
 Either report a vulnerability privately [here](https://github.com/nonce9/pwch/security/advisories/new) (preferred)
