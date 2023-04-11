@@ -97,10 +97,10 @@ type changePasswordTemplateData struct {
 	Special  bool
 }
 
-func printVersion() {
+func printBuildInfo() {
 	buildInfo, ok := debug.ReadBuildInfo()
 	if !ok {
-		panic("Can't read BuildInfo")
+		log.Fatal("Can't read BuildInfo")
 	}
 
 	fmt.Println("pwch version:")
@@ -581,7 +581,7 @@ func main() {
 		}
 		for _, arg := range os.Args {
 			if arg == "--version" {
-				printVersion()
+				printBuildInfo()
 				os.Exit(0)
 			}
 		}
