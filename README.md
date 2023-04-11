@@ -174,17 +174,17 @@ have to execute these steps manually.
 
 __ATTENTION__: Remove the `{BLF-CRYPT}` prefix before inserting the password into the database.
 
-When the user accounts is present in the database, run:
+2. When the user accounts is present in the database, run:
 
 ```
 # doveadm -o plugin/mail_crypt_private_password=<sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
 ```
 
-To calculate the sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be activated)
+3. To calculate the sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be activated)
 
 ```
 select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
 ```
 
-When the mailbox is encrypted tell your new user to change the password.
+4. When the mailbox is encrypted tell your new user to change the password.
 
