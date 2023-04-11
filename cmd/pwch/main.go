@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -360,20 +361,29 @@ func reencryptMailbox(email string, oldPass string, newPass string) bool {
 	oldHashString := hex.EncodeToString(oldHash.Sum(nil))
 	newHashString := hex.EncodeToString(newHash.Sum(nil))
 
-	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "swap", email, oldHashString, newHashString)
-	err := cmd.Run()
-
-	if err == nil {
-		log.Print("INFO: Successfully swapped keys for " + email)
-		return true
+	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "swap")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatal(err)
 	}
-	log.Print("ERROR: Can't swap keys for " + email)
-	log.Print(err)
-	return false
+	defer stdin.Close()
+
+	if err = cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+
+	io.WriteString(stdin, email)
+	io.WriteString(stdin, oldHashString)
+	io.WriteString(stdin, newHashString)
+
+	cmd.Wait()
+
+	log.Print("INFO: Successfully swapped keys for " + email)
+	return true
 }
 
 func terminateIMAPSessions(email string) bool {
-	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "kick", email)
+	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "kick")
 	err := cmd.Run()
 
 	if err == nil {
