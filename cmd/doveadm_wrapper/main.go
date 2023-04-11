@@ -34,31 +34,35 @@ func errorHandler(err error) {
 	os.Exit(-1)
 }
 
+func printBuildInfo() {
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		log.Fatal("Can't read BuildInfo")
+	}
+
+	fmt.Println("pwch version:")
+	fmt.Printf("  %s\n", version)
+
+	fmt.Println("Built with:")
+	fmt.Printf("  %s\n", buildInfo.GoVersion)
+
+	fmt.Println("Dependencies:")
+	if len(buildInfo.Deps) > 0 {
+		for _, dep := range buildInfo.Deps {
+			fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
+		}
+	} else {
+		fmt.Println("  no external dependencies")
+	}
+}
+
 func main() {
 	if len(os.Args) > 1 && os.Args[1] != "" {
 		behavior := os.Args[1]
 
 		// print pwch version and build info
 		if behavior == "--version" {
-			buildInfo, ok := debug.ReadBuildInfo()
-			if !ok {
-				panic("Can't read BuildInfo")
-			}
-
-			fmt.Println("pwch version:")
-			fmt.Printf("  %s\n", version)
-
-			fmt.Println("Built with:")
-			fmt.Printf("  %s\n", buildInfo.GoVersion)
-
-			fmt.Println("Dependencies:")
-			if len(buildInfo.Deps) > 0 {
-				for _, dep := range buildInfo.Deps {
-					fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
-				}
-			} else {
-				fmt.Println("  no external dependencies")
-			}
+			printBuildInfo()
 			os.Exit(0)
 		}
 
