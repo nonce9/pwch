@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -87,21 +87,16 @@ func main() {
 			fmt.Scanf("%s", &newHashString)
 
 			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-U")
-			stdin, err := cmd.StdinPipe()
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer stdin.Close()
 
-			if err = cmd.Start(); err != nil {
+			var input bytes.Buffer
+			input.Write([]byte(oldHashString + "\n" + newHashString + "\n"))
+
+			cmd.Stdin = &input
+
+			err := cmd.Run()
+			if err != nil {
 				errorHandler(err)
 			}
-
-			io.WriteString(stdin, oldHashString)
-			io.WriteString(stdin, newHashString)
-
-			cmd.Wait()
-
 			os.Exit(0)
 		}
 	}

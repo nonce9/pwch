@@ -1,12 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -362,24 +362,21 @@ func reencryptMailbox(email string, oldPass string, newPass string) bool {
 	newHashString := hex.EncodeToString(newHash.Sum(nil))
 
 	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "swap")
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		log.Fatal(err)
+
+	var input bytes.Buffer
+	input.Write([]byte(email + "\n" + oldHashString + "\n" + newHashString + "\n"))
+
+	cmd.Stdin = &input
+
+	err := cmd.Run()
+	if err == nil {
+		log.Print("INFO: Successfully swapped keys for " + email)
+		return true
 	}
-	defer stdin.Close()
 
-	if err = cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	io.WriteString(stdin, email)
-	io.WriteString(stdin, oldHashString)
-	io.WriteString(stdin, newHashString)
-
-	cmd.Wait()
-
-	log.Print("INFO: Successfully swapped keys for " + email)
-	return true
+	log.Print("ERROR: Can't swap keys for " + email)
+	log.Print(err)
+	return false
 }
 
 func terminateIMAPSessions(email string) bool {
