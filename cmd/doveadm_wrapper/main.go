@@ -13,7 +13,6 @@ import (
 
 const version = "0.3.2"
 const allowedEmail = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.@"
-const allowedPassword = "0123456789abcdef"
 
 func isAllowed(input string, allowed string) bool {
 	for i := 0; i < len(input); i++ {
@@ -85,6 +84,11 @@ func main() {
 			fmt.Scanf("%s", &email)
 			fmt.Scanf("%s", &oldHashString)
 			fmt.Scanf("%s", &newHashString)
+
+			// prevent command injection
+			if !isAllowed(email, allowedEmail) {
+				os.Exit(1)
+			}
 
 			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-U")
 
