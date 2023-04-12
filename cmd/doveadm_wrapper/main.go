@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-const version = "0.3.2"
+const version = "0.3.3"
 const allowedEmail = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.@"
 
 func isAllowed(input string, allowed string) bool {
