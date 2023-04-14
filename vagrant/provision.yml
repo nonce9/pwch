@@ -7,6 +7,7 @@
       ansible.builtin.apt:
         name: "*"
         state: latest
+        update_cache: true
       become: true
     - name: Install postfix
       ansible.builtin.apt:
