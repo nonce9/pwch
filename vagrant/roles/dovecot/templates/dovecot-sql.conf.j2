@@ -1,0 +1,7 @@
+driver=pgsql
+connect = "host=/run/postgresql dbname=vmail user=vmail password=password"
+default_pass_scheme = BLF-CRYPT
+
+password_query = SELECT username AS user, domain, password, encode(digest('%w', 'sha3-512'), 'hex') AS userdb_mail_crypt_private_password FROM accounts WHERE username = '%Ln' AND domain = '%Ld' and enabled = true;
+user_query = SELECT concat('*:storage=', quota, 'M') AS quota_rule FROM accounts WHERE username = '%Ln' AND domain = '%Ld' AND sendonly = false;
+iterate_query = SELECT username, domain FROM accounts where sendonly = false;

@@ -8,10 +8,17 @@
         name: "*"
         state: latest
       become: true
+    - name: Install postfix
+      ansible.builtin.apt:
+        name: postfix
+        state: present
+      become: true
 
 - name: Deploy pwch and dependencies
   hosts: all
   gather_facts: true
   roles:
     - role: postgres
+      become: true
+    - role: dovecot
       become: true
