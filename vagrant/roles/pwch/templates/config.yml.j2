@@ -1,0 +1,36 @@
+---
+domain: {{ pwch_domain }}
+url_prefix: {{ pwch_url_prefix }}
+assets_path: {{ pwch_assets_path }}
+
+server:
+  listen_address: {{ pwch_listen_address }}
+  port: {{ pwch_listen_port }}
+
+db:
+  host: {{ pwch_db_host }}
+  db_name: {{ pwch_db_name }}
+  user: {{ pwch_db_user }}
+  password: {{ pwch_db_password }}
+  ssl_mode: {{ pwch_ssl_mode }}
+
+bcrypt:
+  cost: {{ pwch_bcrypt_cost }}
+
+smtp:
+  host: {{ pwch_smtp_host }}
+  port: {{ pwch_smtp_port }}
+  login_user: {{ pwch_smtp_user }}
+  login_password: {{ pwch_smtp_password }}
+  sender: {{ pwch_smtp_sender }}
+
+password_policy:
+  min_length: {{ pwch_pw_policy_min }}
+  max_length: {{ pwch_pw_policy_max }}
+  lower_case: {{ pwch_pw_policy_lower }}
+  upper_case: {{ pwch_pw_policy_upper }}
+  digits: {{ pwch_pw_policy_digits }}
+  special_char: {{ pwch_pw_policy_special }}
+
+otl:
+  valid_for: {{ pwch_otl_valid_for }}

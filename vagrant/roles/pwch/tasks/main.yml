@@ -1,0 +1,4 @@
+---
+- name: Include installation tasks
+  ansible.builtin.import_tasks: install.yml
+  become: true
