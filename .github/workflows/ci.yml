@@ -44,7 +44,7 @@ jobs:
             cmd/doveadm_wrapper/doveadm_wrapper
 
   ci:
-    runs-on: ubuntu-latest
+    runs-on: macos-12
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -54,6 +54,14 @@ jobs:
         with:
           path: vagrant/roles/pwch/files
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Set up Ansible
+        run: pip3 install ansible
+
       - name: Run vagrant up
         working-directory: vagrant
-        run: vagrant up
+        run: vagrant up --provision
