@@ -1,0 +1,17 @@
+---
+- name: Update packages
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+      become: true
+
+- name: Deploy pwch and dependencies
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: postgres
+      become: true

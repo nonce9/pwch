@@ -1,0 +1,12 @@
+---
+- name: Copy postgres auth config to host
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: 0600
+  notify: Restart postgresql
+
+- name: Run all notified handlers now
+  ansible.builtin.meta: flush_handlers

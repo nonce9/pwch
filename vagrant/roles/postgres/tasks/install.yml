@@ -1,0 +1,23 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: "{{ postgres_packages }}"
+    state: present
+    update_cache: true
+
+- name: Copy postgres config to host
+  ansible.builtin.template:
+    src: ansible.conf.j2
+    dest: /etc/postgresql/14/main/conf.d/ansible.conf
+    owner: postgres
+    group: postgres
+    mode: 0600
+  notify: Restart postgresql
+
+- name: Enable postgres service
+  ansible.builtin.systemd:
+    name: postgresql
+    enabled: true
+
+- name: Run all notified handlers now
+  ansible.builtin.meta: flush_handlers
