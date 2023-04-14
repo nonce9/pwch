@@ -1,0 +1,63 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Install dependencies
+        working-directory: cmd/pwch
+        run: go get .
+
+      - name: Test pwch
+        working-directory: cmd/pwch
+        run: go test -v
+
+      - name: Build pwch
+        working-directory: cmd/pwch
+        run: go build -v
+
+      - name: Build doveadm_wrapper
+        working-directory: cmd/doveadm_wrapper
+        run: go build -v
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pwch
+          path: |
+            cmd/pwch/pwch
+            cmd/doveadm_wrapper/doveadm_wrapper
+
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        working-directory: vagrant/roles/pwch/files
+        with:
+          name: pwch
+          path: |
+            pwch/pwch
+            doveadm_wrapp/doveadm_wrapper
+
+      - name: Run vagrant up
+        working-directory: vagrant
+        run: vagrant up
