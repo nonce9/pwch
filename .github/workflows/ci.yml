@@ -29,11 +29,11 @@ jobs:
 
       - name: Build pwch
         working-directory: cmd/pwch
-        run: go build -v
+        run: CGO_ENABLED=0 go build -v
 
       - name: Build doveadm_wrapper
         working-directory: cmd/doveadm_wrapper
-        run: go build -v
+        run: CGO_ENABLED=0 go build -v
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
