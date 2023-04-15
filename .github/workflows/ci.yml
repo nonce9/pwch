@@ -47,6 +47,7 @@ jobs:
           path: cmd/doveadm_wrapper/doveadm_wrapper
 
   ci:
+    needs: build
     runs-on: macos-12
     steps:
       - name: Checkout repository
