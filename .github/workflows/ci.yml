@@ -56,6 +56,13 @@ jobs:
       - name: Download pwch artifact
         uses: actions/download-artifact@v3
         with:
+          name: pwch
+          path: vagrant/roles/pwch/files/
+
+      - name: Download doveadm_wrapper artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: doveadm_wrapper
           path: vagrant/roles/pwch/files/
 
       - name: Cache Vagrant boxes
