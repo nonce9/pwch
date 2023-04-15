@@ -71,4 +71,4 @@ jobs:
 
       - name: Run vagrant up
         working-directory: vagrant
-        run: vagrant up --provision
+        run: vagrant up
