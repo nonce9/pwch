@@ -6,8 +6,8 @@
     update_cache: true
 
 - name: Copy postgres config to host
-  ansible.builtin.template:
-    src: ansible.conf.j2
+  ansible.builtin.copy:
+    src: ansible.conf
     dest: /etc/postgresql/14/main/conf.d/ansible.conf
     owner: postgres
     group: postgres
