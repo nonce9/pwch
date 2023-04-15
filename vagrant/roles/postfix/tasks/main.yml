@@ -1,0 +1,20 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - postfix
+      - postfix-pgsql
+    state: present
+    update_cache: true
+
+- name: Import configuration tasks
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Enable and start postfix service
+  ansible.builtin.systemd:
+    name: postfix
+    enabled: true
+    state: started
+
+- name: Run all notified handlers now
+  ansible.builtin.meta: flush_handlers
