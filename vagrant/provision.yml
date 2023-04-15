@@ -1,26 +1,14 @@
 ---
-- name: Update packages
+- name: Run CI test
   hosts: all
   gather_facts: false
-  tasks:
-    - name: Upgrade packages
-      ansible.builtin.apt:
-        name: "*"
-        state: latest
-        update_cache: true
-      become: true
-    - name: Install postfix
-      ansible.builtin.apt:
-        name: postfix
-        state: present
-      become: true
-
-- name: Deploy pwch and dependencies
-  hosts: all
-  gather_facts: true
   roles:
     - role: postgres
+      become: true
+    - role: postfix
       become: true
     - role: dovecot
       become: true
     - role: pwch
+      become: true
+    - role: tests
