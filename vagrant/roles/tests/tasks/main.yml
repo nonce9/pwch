@@ -1,0 +1,103 @@
+---
+- name: Install getmail
+  ansible.builtin.apt:
+    name: getmail6
+    state: present
+  become: true
+
+- name: Create getmail directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0750
+  loop:
+    - .config
+    - .config/getmail
+    - mail
+    - mail/cur
+    - mail/new
+    - mail/tmp
+
+- name: Copy getmail config
+  ansible.builtin.copy:
+    src: getmailrc
+    dest: .config/getmail/getmailrc
+    owner: vagrant
+    group: vagrant
+    mode: 0640
+
+- name: Encrypt mailbox
+  ansible.builtin.command: doveadm -o plugin/mail_crypt_private_password=e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716 mailbox cryptokey generate -u vagrant@localdomain -U
+  become: true
+
+- name: Wait for 5 seconds
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: Request one time link
+  ansible.builtin.uri:
+    url: http://127.0.0.1:8080/selfservice/emailSend
+    method: POST
+    body:
+      email:
+        content: vagrant@localdomain
+    status_code: 303
+    body_format: form-multipart
+
+- name: Wait for 3 seconds
+  ansible.builtin.pause:
+    seconds: 3
+
+- name: Retrieve email
+  ansible.builtin.command: getmail
+
+- name: Get password change URL
+  ansible.builtin.shell: |
+    grep -r --no-filename changePassword mail/ | awk -F'?' '{ print $2}'
+  register: pw_change_url
+
+- name: Change Password
+  ansible.builtin.uri:
+    url: |
+      http://127.0.0.1:8080/selfservice/submitPassword?{{ pw_change_url.stdout }}
+    method: POST
+    body:
+      email:
+        content: vagrant@localdomain
+      current-password:
+        content: password
+      new-password:
+        content: Password1234-1234
+      confirm-password:
+        content: Password1234-1234
+    status_code: 200
+    body_format: form-multipart
+
+- name: Wait for 5 seconds
+  ansible.builtin.pause:
+    seconds: 5
+
+- name: Request one time link again
+  ansible.builtin.uri:
+    url: http://127.0.0.1:8080/selfservice/emailSend
+    method: POST
+    body:
+      email:
+        content: vagrant@localdomain
+    status_code: 303
+    body_format: form-multipart
+
+- name: Wait for 3 seconds
+  ansible.builtin.pause:
+    seconds: 3
+
+- name: Change password in imap client
+  ansible.builtin.lineinfile:
+    path: .config/getmail/getmailrc
+    regexp: ^password = password$
+    line: password = Password1234-1234
+
+- name: Retrieve email
+  ansible.builtin.command: getmail
