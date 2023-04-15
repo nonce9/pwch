@@ -11,13 +11,13 @@
     - dovecot-sql.conf.ext
 
 - name: Copy config templates to host
-  ansible.builtin.template:
-    src: "{{ item.src }}"
-    dest: /etc/dovecot/{{ item.dest }}
+  ansible.builtin.copy:
+    src: "{{ item.name }}"
+    dest: /etc/dovecot/{{ item.name }}
     owner: root
     group: dovecot
     mode: "{{ item.mode }}"
   notify: Restart dovecot
   loop:
-    - {src: dovecot.conf.j2, dest: dovecot.conf, mode: "0640"}
-    - {src: dovecot-sql.conf.j2, dest: dovecot-sql.conf, mode: "0440"}
+    - {name: dovecot.conf, mode: "0640"}
+    - {name: dovecot-sql.conf, mode: "0440"}
