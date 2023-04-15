@@ -34,13 +34,17 @@ jobs:
         working-directory: cmd/doveadm_wrapper
         run: CGO_ENABLED=0 go build -v
 
-      - name: Upload artifacts
+      - name: Upload pwch artifact
         uses: actions/upload-artifact@v3
         with:
-          name: pwch
-          path: |
-            cmd/pwch/pwch
-            cmd/doveadm_wrapper/doveadm_wrapper
+          name: pwch-${{ github.sha }}
+          path: cmd/pwch/pwch
+
+      - name: Upload doveadm_wrapper artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: doveadm_wrapper-${{ github.sha }}
+          path: cmd/doveadm_wrapper/doveadm_wrapper
 
   ci:
     runs-on: macos-12
@@ -48,10 +52,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download artifacts
+      - name: Download pwch artifact
         uses: actions/download-artifact@v3
         with:
-          name: pwch
+          name: pwch-${{ github.sha }}
+          path: vagrant/roles/pwch/files
+
+      - name: Download doveadm_wrapper artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: doveadm_wrapper-${{ github.sha }}
           path: vagrant/roles/pwch/files
 
       - name: Cache Vagrant boxes
