@@ -1,0 +1,108 @@
+---
+- name: Add pwch group
+  ansible.builtin.group:
+    name: pwch
+    state: present
+
+- name: Add pwch user
+  ansible.builtin.user:
+    name: pwch
+    groups:
+      - pwch
+    shell: /sbin/nologin
+    create_home: false
+    system: true
+    state: present
+
+- name: Create config directory
+  ansible.builtin.file:
+    path: /etc/pwch
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy config file to host
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: /etc/pwch/config.yml
+    owner: pwch
+    group: pwch
+    mode: 0640
+  notify: Restart pwch
+
+- name: Create assets directory
+  ansible.builtin.file:
+    path: /usr/local/src/pwch
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy assets to host
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /usr/local/src/pwch/{{ item }}
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - changePassword.html
+    - error.html
+    - submitEmail.html
+    - success.html
+
+- name: Copy pwch binary to host
+  ansible.builtin.copy:
+    src: pwch
+    dest: /usr/local/bin/pwch
+    owner: root
+    group: root
+    mode: 0755
+  notify: Restart pwch
+
+- name: Copy doveadm_wrapper binary to host
+  ansible.builtin.copy:
+    src: doveadm_wrapper
+    dest: /usr/local/bin/doveadm_wrapper
+    owner: root
+    group: pwch
+    mode: 04750
+
+- name: Copy unit file to host
+  ansible.builtin.copy:
+    src: pwch.service
+    dest: /etc/systemd/system/pwch.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: Reload systemd
+
+- name: Copy apparmor profile to host
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: /etc/apparmor.d/usr.local.bin.{{ item.dest }}
+    owner: root
+    group: root
+    mode: 0644
+  register: apparmor_policy
+  when: pwch_apparmor_enabled
+  loop:
+    - {src: apparmor_profile_pwch, dest: pwch}
+    - {src: apparmor_profile_doveadm_wrapper, dest: doveadm_wrapper}
+
+- name: Reload apparmor policies  # noqa no-handler
+  ansible.builtin.command: >
+    apparmor_parser -r /etc/apparmor.d/usr.local.bin.pwch
+    /etc/apparmor.d/usr.local.bin.doveadm_wrapper
+  when: apparmor_policy.changed
+
+- name: Enable and start service
+  ansible.builtin.systemd:
+    name: pwch
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Run all notified handlers now
+  ansible.builtin.meta: flush_handlers

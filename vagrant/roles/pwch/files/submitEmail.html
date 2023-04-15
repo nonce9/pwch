@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <link rel="stylesheet" type="text/css" href="/css/email.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128">
+    <link rel="icon" type="image/png" href="/favicon-180.png" sizes="180x180">
+    <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192">
+  </head>
+  <body>
+    <main>
+      <section id="email-form">
+        <div class="card">
+          <svg id="envelope-svg" width="100px" height="100px" version="1.1" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
+            <g stroke-width="6" stroke-linejoin="round" stroke="#000" fill="#558cba">
+              <rect x="50" y="75" width="150" height="100" rx="5"/>
+              <path d="M 50,175 125,110 200,175"/>
+              <path d="M 50,75 125,130 200,75"/>
+            </g>
+          </svg>
+          <form action="/selfservice/emailSend" method="POST">
+            <input class="form-element input-field" name="email" type="email" placeholder="Enter your email">
+            <input class="form-element submit-button" type="submit" value="Submit">
+          </form>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+

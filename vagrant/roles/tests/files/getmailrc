@@ -1,0 +1,13 @@
+[retriever]
+type = SimpleIMAPRetriever
+server = 127.0.0.1
+port = 143
+username = vagrant@localdomain
+password = password
+
+[destination]
+type = Maildir
+path = ~/mail/
+
+[options]
+delete = true

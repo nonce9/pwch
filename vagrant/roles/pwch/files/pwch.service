@@ -1,0 +1,14 @@
+[Unit]
+Description=pwch service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=30s
+User=pwch
+Group=pwch
+ExecStart=/usr/local/bin/pwch
+
+[Install]
+WantedBy=multi-user.target

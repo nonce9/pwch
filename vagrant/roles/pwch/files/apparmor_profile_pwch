@@ -1,0 +1,26 @@
+# Last Modified: Sat Dec 31 11:10:05 2022
+include <tunables/global>
+
+# vim:syntax=apparmor
+# AppArmor policy for pwch
+# pwch apparmor profile
+# No template variables specified
+
+
+/usr/local/bin/pwch {
+  include <abstractions/base>
+  include <abstractions/gio-open>
+  include <abstractions/nameservice>
+
+  /etc/mime.types r,
+  /proc/sys/net/core/somaxconn r,
+  /run/postgresql/.s.PGSQL.5432 rw,
+  /sys/kernel/mm/transparent_hugepage/hpage_pmd_size r,
+  /usr/local/bin/doveadm_wrapper Px,
+  /usr/local/src/pwch/changePassword.html r,
+  /usr/local/src/pwch/error.html r,
+  /usr/local/src/pwch/submitEmail.html r,
+  /usr/local/src/pwch/success.html r,
+  owner /etc/pwch/config.yml r,
+
+}

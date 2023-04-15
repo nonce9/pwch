@@ -1,0 +1,23 @@
+---
+- name: Remove unneeded configs
+  ansible.builtin.file:
+    path: /etc/dovecot/{{ item }}
+    state: absent
+  notify: Restart dovecot
+  loop:
+    - conf.d
+    - dovecot-dict-auth.conf.ext
+    - dovecot-dict-sql.conf.ext
+    - dovecot-sql.conf.ext
+
+- name: Copy config templates to host
+  ansible.builtin.copy:
+    src: "{{ item.name }}"
+    dest: /etc/dovecot/{{ item.name }}
+    owner: root
+    group: dovecot
+    mode: "{{ item.mode }}"
+  notify: Restart dovecot
+  loop:
+    - {name: dovecot.conf, mode: "0640"}
+    - {name: dovecot-sql.conf, mode: "0440"}
