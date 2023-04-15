@@ -51,6 +51,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
+          name: pwch
           path: vagrant/roles/pwch/files
 
       - name: Cache Vagrant boxes
