@@ -37,13 +37,13 @@ jobs:
       - name: Upload pwch artifact
         uses: actions/upload-artifact@v3
         with:
-          name: pwch-${{ github.sha }}
+          name: pwch
           path: cmd/pwch/pwch
 
       - name: Upload doveadm_wrapper artifact
         uses: actions/upload-artifact@v3
         with:
-          name: doveadm_wrapper-${{ github.sha }}
+          name: doveadm_wrapper
           path: cmd/doveadm_wrapper/doveadm_wrapper
 
   ci:
@@ -55,14 +55,7 @@ jobs:
       - name: Download pwch artifact
         uses: actions/download-artifact@v3
         with:
-          name: pwch-${{ github.sha }}
-          path: vagrant/roles/pwch/files
-
-      - name: Download doveadm_wrapper artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: doveadm_wrapper-${{ github.sha }}
-          path: vagrant/roles/pwch/files
+          path: vagrant/roles/pwch/files/
 
       - name: Cache Vagrant boxes
         uses: actions/cache@v3
