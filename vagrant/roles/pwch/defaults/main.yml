@@ -1,7 +1,5 @@
 ---
-pwch_base_url: https://github.com/nonce9/pwch/releases/download
-
-pwch_domain: example.com
+pwch_domain: localhost
 pwch_url_prefix: /selfservice
 pwch_assets_path: /usr/local/src/pwch
 
@@ -16,11 +14,11 @@ pwch_ssl_mode: disable
 
 pwch_bcrypt_cost: 14
 
-pwch_smtp_host: example.com
+pwch_smtp_host: vagrant
 pwch_smtp_port: 587
-pwch_smtp_user: noreply@example.com
+pwch_smtp_user: noreply@localdomain
 pwch_smtp_password: password
-pwch_smtp_sender: "PWCH <noreply@example.com>"
+pwch_smtp_sender: "PWCH <noreply@localdomain>"
 
 pwch_pw_policy_min: 12
 pwch_pw_policy_max: 128
