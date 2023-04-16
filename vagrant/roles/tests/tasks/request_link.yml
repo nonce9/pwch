@@ -1,0 +1,16 @@
+---
+- name: Request password change links
+  block:
+    - name: Wait for 6 seconds
+      ansible.builtin.pause:
+        seconds: 6
+
+    - name: Request one time link
+      ansible.builtin.uri:
+        url: http://127.0.0.1:8080/selfservice/emailSend
+        method: POST
+        body:
+          email:
+            content: "{{ item }}@localdomain"
+        status_code: 200
+        body_format: form-multipart

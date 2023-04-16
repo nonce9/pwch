@@ -50,7 +50,9 @@ CREATE TABLE IF NOT EXISTS aliases (
 
 INSERT INTO domains (domain) VALUES ('localdomain');
 INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('noreply', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 10, true, true);
-INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('vagrant', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);
+INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('vagrant1', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);
+INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('vagrant2', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);
+INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('vagrant3', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);
 
 ALTER TABLE domains OWNER TO vmail;
 ALTER TABLE accounts OWNER TO vmail;

@@ -15,62 +15,81 @@
   loop:
     - .config
     - .config/getmail
-    - mail
-    - mail/cur
-    - mail/new
-    - mail/tmp
+    - mailvagrant1
+    - mailvagrant1/cur
+    - mailvagrant1/new
+    - mailvagrant1/tmp
+    - mailvagrant2
+    - mailvagrant2/cur
+    - mailvagrant2/new
+    - mailvagrant2/tmp
+    - mailvagrant3
+    - mailvagrant3/cur
+    - mailvagrant3/new
+    - mailvagrant3/tmp
 
 - name: Copy getmail config
   ansible.builtin.copy:
-    src: getmailrc
-    dest: .config/getmail/getmailrc
+    src: "{{ item }}"
+    dest: .config/getmail/{{ item }}
     owner: vagrant
     group: vagrant
     mode: 0640
+  loop:
+    - getmailrc1
+    - getmailrc2
+    - getmailrc3
 
 - name: Encrypt mailbox  # noqa no-changed-when
   ansible.builtin.command: "doveadm -o plugin/mail_crypt_private_password=\
                             e9a75486736a550af4fea861e2378305c4a555a05094de\
                             e1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb0\
                             54a146e8282f8e35ff2e6368c1a62e909716 mailbox
-                            cryptokey generate -u vagrant@localdomain -U"
+                            cryptokey generate -u {{ item }}@localdomain -U"
   become: true
+  loop:
+    - vagrant1
+    - vagrant2
+    - vagrant3
 
-- name: Wait for 5 seconds
-  ansible.builtin.pause:
-    seconds: 5
-
-- name: Request one time link
-  ansible.builtin.uri:
-    url: http://127.0.0.1:8080/selfservice/emailSend
-    method: POST
-    body:
-      email:
-        content: vagrant@localdomain
-    status_code: 200
-    body_format: form-multipart
+- name: Request password change link
+  ansible.builtin.include_tasks: request_link.yml
+  loop:
+    - vagrant1
+    - vagrant2
+    - vagrant3
 
 - name: Wait for 3 seconds
   ansible.builtin.pause:
     seconds: 3
 
 - name: Retrieve email  # noqa no-changed-when
-
-  ansible.builtin.command: getmail
+  ansible.builtin.command: getmail --rcfile={{ item }}
+  loop:
+    - getmailrc1
+    - getmailrc2
+    - getmailrc3
 
 - name: Get password change URL  # noqa no-changed-when risky-shell-pipe
-  ansible.builtin.shell: |
-    grep -r --no-filename changePassword mail/ | awk -F'?' '{ print $2}'
-  register: pw_change_url
+  ansible.builtin.shell: >
+    grep -r --no-filename changePassword mail{{ item }}/
+    | awk -F'?' '{ print $2 }'
+  register: pw_change_urls
+  loop:
+    - vagrant1
+    - vagrant2
+    - vagrant3
+  loop_control:
+    label: "{{ item }}"
 
 - name: Change Password
   ansible.builtin.uri:
     url: "http://127.0.0.1:8080/selfservice/submitPassword?\
-          {{ pw_change_url.stdout }}"
+          {{ item.stdout }}"
     method: POST
     body:
       email:
-        content: vagrant@localdomain
+        content: "{{ item.item }}@localdomain"
       current-password:
         content: password
       new-password:
@@ -79,20 +98,16 @@
         content: Password1234-1234
     status_code: 200
     body_format: form-multipart
+  loop: "{{ pw_change_urls.results }}"
+  loop_control:
+    label: "{{ item.item }}"
 
-- name: Wait for 5 seconds
-  ansible.builtin.pause:
-    seconds: 5
-
-- name: Request one time link again
-  ansible.builtin.uri:
-    url: http://127.0.0.1:8080/selfservice/emailSend
-    method: POST
-    body:
-      email:
-        content: vagrant@localdomain
-    status_code: 200
-    body_format: form-multipart
+- name: Request password change link
+  ansible.builtin.include_tasks: request_link.yml
+  loop:
+    - vagrant1
+    - vagrant2
+    - vagrant3
 
 - name: Wait for 3 seconds
   ansible.builtin.pause:
@@ -100,9 +115,53 @@
 
 - name: Change password in imap client
   ansible.builtin.lineinfile:
-    path: .config/getmail/getmailrc
+    path: .config/getmail/getmailrc{{ item }}
     regexp: ^password = password$
     line: password = Password1234-1234
+  loop:
+    - 1
+    - 2
+    - 3
 
-- name: Retrieve email  # noqa no-changed-when
-  ansible.builtin.command: getmail
+- name: Retrieve emails  # noqa no-changed-when
+  ansible.builtin.command: getmail --rcfile={{ item }}
+  loop:
+    - getmailrc1
+    - getmailrc2
+    - getmailrc3
+
+- name: Get password change URL  # noqa no-changed-when risky-shell-pipe
+  ansible.builtin.shell: >
+    grep -r --no-filename changePassword mail{{ item }}/
+    | awk -F'?' '{ print $2 }'
+  register: pw_change_urls
+  loop:
+    - vagrant1
+    - vagrant2
+    - vagrant3
+  loop_control:
+    label: "{{ item }}"
+
+- name: Extract URLs
+  ansible.builtin.set_fact:
+    urls_lists: "{{ pw_change_urls.results \
+                | selectattr('stdout_lines', 'search', 'token') \
+                | map(attribute='stdout_lines') }}"
+
+- name: Union URLs
+  ansible.builtin.set_fact:
+    urls_union: "{{ urls_lists[0] \
+                 | union(urls_lists[1]) \
+                 | union(urls_lists[2]) }}"
+
+- name: Add line breaks to URLs
+  ansible.builtin.set_fact:
+    output: |
+      {% for url in urls_union %}
+      {{ url }}
+      {% endfor %}
+
+- name: Print URLs
+  ansible.builtin.debug:
+    msg: "{{ output.split('\n') }}"
+  failed_when: urls_union | length != 6
