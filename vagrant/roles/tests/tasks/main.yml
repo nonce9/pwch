@@ -43,7 +43,7 @@
     body:
       email:
         content: vagrant@localdomain
-    status_code: 303
+    status_code: 200
     body_format: form-multipart
 
 - name: Wait for 3 seconds
@@ -86,7 +86,7 @@
     body:
       email:
         content: vagrant@localdomain
-    status_code: 303
+    status_code: 200
     body_format: form-multipart
 
 - name: Wait for 3 seconds
