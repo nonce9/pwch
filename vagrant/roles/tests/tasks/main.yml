@@ -28,8 +28,12 @@
     group: vagrant
     mode: 0640
 
-- name: Encrypt mailbox
-  ansible.builtin.command: doveadm -o plugin/mail_crypt_private_password=e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716 mailbox cryptokey generate -u vagrant@localdomain -U
+- name: Encrypt mailbox  # noqa no-changed-when
+  ansible.builtin.command: "doveadm -o plugin/mail_crypt_private_password=\
+                            e9a75486736a550af4fea861e2378305c4a555a05094de\
+                            e1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb0\
+                            54a146e8282f8e35ff2e6368c1a62e909716 mailbox
+                            cryptokey generate -u vagrant@localdomain -U"
   become: true
 
 - name: Wait for 5 seconds
@@ -50,18 +54,19 @@
   ansible.builtin.pause:
     seconds: 3
 
-- name: Retrieve email
+- name: Retrieve email  # noqa no-changed-when
+
   ansible.builtin.command: getmail
 
-- name: Get password change URL
+- name: Get password change URL  # noqa no-changed-when risky-shell-pipe
   ansible.builtin.shell: |
     grep -r --no-filename changePassword mail/ | awk -F'?' '{ print $2}'
   register: pw_change_url
 
 - name: Change Password
   ansible.builtin.uri:
-    url: |
-      http://127.0.0.1:8080/selfservice/submitPassword?{{ pw_change_url.stdout }}
+    url: "http://127.0.0.1:8080/selfservice/submitPassword?\
+          {{ pw_change_url.stdout }}"
     method: POST
     body:
       email:
@@ -99,5 +104,5 @@
     regexp: ^password = password$
     line: password = Password1234-1234
 
-- name: Retrieve email
+- name: Retrieve email  # noqa no-changed-when
   ansible.builtin.command: getmail
