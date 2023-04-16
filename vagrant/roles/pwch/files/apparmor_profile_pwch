@@ -20,6 +20,7 @@ include <tunables/global>
   /usr/local/src/pwch/changePassword.html r,
   /usr/local/src/pwch/error.html r,
   /usr/local/src/pwch/submitEmail.html r,
+  /usr/local/src/pwch/emailSent.html r,
   /usr/local/src/pwch/success.html r,
   owner /etc/pwch/config.yml r,
 

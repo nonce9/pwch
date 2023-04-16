@@ -428,7 +428,7 @@ func emailSendHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, cfg.URLPrefix+"/emailSent", http.StatusSeeOther)
+	http.ServeFile(w, r, cfg.AssetsPath+"/emailSent.html")
 
 	enabled, mailUser := emailEnabled(email)
 
