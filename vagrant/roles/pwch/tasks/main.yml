@@ -50,6 +50,7 @@
     - changePassword.html
     - error.html
     - submitEmail.html
+    - emailSent.html
     - success.html
 
 - name: Copy pwch binary to host
