@@ -25,9 +25,3 @@ This means that not every feature request may result in an implementation.
 If you intend to implement a new feature yourself and open a pull request, I suggest you open an issue first to ensure it has a chance to get accepted. 
 
 Anyways, please use the feature request template when opening an issue.
-
------
-
-### Do you have a question?
-
-Ask any question in the [discussion space](https://github.com/nonce9/pwch/discussions).
