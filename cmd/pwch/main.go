@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/mail"
 	"net/smtp"
@@ -24,15 +25,10 @@ import (
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/sha3"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
-const version = "0.3.3"
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const lowercase = "abcdefghijklmnopqrstuvwxyz"
-const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const digits = "0123456789"
-
+var version string
 var configPath = "/etc/pwch/config.yml"
 var cfg config
 var lastEmailSent time.Time
@@ -152,12 +148,18 @@ func addToHashMap(m map[string]time.Time, key string, value time.Time) {
 	oneTimeURLs.Unlock()
 }
 
-func genRandomString(n int) string {
+func genRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
-	for i := range b {
-		b[i] = charset[rand.Intn(len(charset))]
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, err
 	}
-	return string(b)
+	return b, nil
+}
+
+func genRandomString(n int) (string, error) {
+	b, err := genRandomBytes(n)
+	return base64.URLEncoding.EncodeToString(b), err
 }
 
 func isValidEmail(email string) bool {
@@ -170,7 +172,11 @@ func templatePasswordErrorPage(w http.ResponseWriter, errorMessage string) {
 	if err != nil {
 		log.Print(err)
 	}
-	tmpl.Execute(w, errorMessage)
+	err = tmpl.Execute(w, errorMessage)
+	if err != nil {
+		log.Print(err)
+		log.Print("ERROR: cannot template error page")
+	}
 }
 
 func enforcePasswordPolicy(password string) (bool, string) {
@@ -234,7 +240,12 @@ func enforcePasswordPolicy(password string) (bool, string) {
 }
 
 func sendOneTimeLink(username, domain string) {
-	var token = genRandomString(64)
+	token, err := genRandomString(64)
+	if err != nil {
+		log.Print(err)
+		log.Print("ERROR: cannot generate random string")
+		return
+	}
 
 	loginUser := cfg.SMTP.LoginUser
 	loginPassword := cfg.SMTP.LoginPassword
@@ -260,7 +271,7 @@ func sendOneTimeLink(username, domain string) {
 
 	auth := smtp.PlainAuth("", loginUser, loginPassword, host)
 
-	err := smtp.SendMail(host+":"+port, auth, loginUser, to, message)
+	err = smtp.SendMail(host+":"+port, auth, loginUser, to, message)
 	if err != nil {
 		log.Print(err)
 		log.Print("ERROR: Sending OTL failed")
@@ -283,6 +294,10 @@ func connectToDatabase() *sql.DB {
 	return db
 }
 
+func closeDatabase(db *sql.DB) error {
+	return db.Close()
+}
+
 func emailEnabled(email string) (bool, mailUser) {
 	components := strings.Split(email, "@")
 	username, domain := components[0], components[1]
@@ -291,7 +306,7 @@ func emailEnabled(email string) (bool, mailUser) {
 
 	stmt, err := db.Prepare("SELECT username, domain, enabled FROM accounts WHERE username = $1 AND domain = $2;")
 	if err != nil {
-		db.Close()
+		_ = closeDatabase(db)
 		log.Fatal(err)
 	}
 
@@ -300,14 +315,14 @@ func emailEnabled(email string) (bool, mailUser) {
 	err = stmt.QueryRow(username, domain).Scan(&mailUser.Username, &mailUser.Domain, &mailUser.Enabled)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			db.Close()
+			_ = closeDatabase(db)
 			log.Print("INFO: Unknown email address: " + username + "@" + domain)
 			return false, mailUser
 		}
 		log.Fatal(err)
 	}
 
-	db.Close()
+	_ = closeDatabase(db)
 
 	if mailUser.Enabled {
 		log.Print("INFO: " + username + "@" + domain + " successfully validated")
@@ -337,11 +352,11 @@ func passwordMatches(username string, domain string, oldPass string, newPass str
 	if err := db.QueryRow("SELECT password FROM accounts WHERE username = $1 AND domain = $2;",
 		username, domain).Scan(&hash); err != nil {
 		if err == sql.ErrNoRows {
-			db.Close()
+			_ = closeDatabase(db)
 			return false
 		}
 	}
-	db.Close()
+	_ = closeDatabase(db)
 
 	if checkPasswordHash(oldPass, hash) {
 		log.Print("INFO: Successfully validated old password for " + username + "@" + domain)
@@ -468,7 +483,11 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print(err)
 	}
-	tmpl.Execute(w, data)
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		log.Print(err)
+		log.Print("ERROR: cannot execute template")
+	}
 }
 
 func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
@@ -543,7 +562,7 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		string(hash), username, domain)
 	if err != nil {
 		log.Print("ERROR: password update query failed")
-		db.Close()
+		_ = closeDatabase(db)
 		return
 	}
 
@@ -552,12 +571,12 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		db.Close()
+		_ = closeDatabase(db)
 		log.Print("INFO: Password successfully changed for " + email)
 
 		terminateIMAPSessions(email)
 	} else {
-		db.Close()
+		_ = closeDatabase(db)
 		templatePasswordErrorPage(w, "Internal error: Password not changed")
 		return
 	}
@@ -589,7 +608,6 @@ func main() {
 
 	readFile(&cfg)
 
-	rand.Seed(time.Now().UnixNano())
 	lastEmailSent = time.Now()
 
 	mux := http.NewServeMux()
@@ -599,10 +617,17 @@ func main() {
 	mux.HandleFunc(cfg.URLPrefix+"/changePassword", passwordChangeHandler)
 	mux.HandleFunc(cfg.URLPrefix+"/submitPassword", passwordSubmitHandler)
 
+	srv := &http.Server{
+		Addr:         cfg.Server.ListenAddress + ":" + cfg.Server.Port,
+		Handler:      mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
 	log.Printf("pwch %s", version)
 	log.Print("INFO: Listening on " + cfg.Server.ListenAddress + ":" + cfg.Server.Port)
 	go func() {
-		log.Fatal(http.ListenAndServe(cfg.Server.ListenAddress+":"+cfg.Server.Port, mux))
+		log.Fatal(srv.ListenAndServe())
 	}()
 
 	ticker := time.NewTicker(30 * time.Second)
