@@ -1,0 +1,70 @@
+---
+pipeline:
+  build_pwch:
+    group: build
+    image: registry.fedoraproject.org/fedora-minimal:latest
+    pull: true
+    environment:
+      - CGO=0
+      - GOOS=linux
+      - GOARCH=amd64
+    commands:
+      - microdnf install -y --nodocs golang
+      - cd cmd/pwch
+      - go get
+      - go build -ldflags "-X cmd.version=${CI_COMMIT_TAG}"
+      - go test -v
+
+  build_doveadm_wrapper:
+    group: build
+    image: registry.fedoraproject.org/fedora-minimal:latest
+    pull: true
+    environment:
+      - CGO=0
+      - GOOS=linux
+      - GOARCH=amd64
+    commands:
+      - microdnf install -y --nodocs golang
+      - cd cmd/doveadm_wrapper
+      - go build -ldflags "-X cmd.version=${CI_COMMIT_TAG}"
+
+  generate_changelog:
+    image: registry.fedoraproject.org/fedora-minimal:latest
+    pull: true
+    commands:
+      - microdnf install -y --nodocs git python3-pip
+      - pip3 install commitizen
+      - cz changelog ${CI_COMMIT_TAG} --file-name="CHANGELOG.md"
+
+  sign_checksums:
+    image: registry.fedoraproject.org/fedora-minimal:latest
+    pull: true
+    commands:
+      - microdnf install -y git
+      - gpg --import <(echo "$GPG_RELEASE_KEY")
+      - cd cmd/pwch
+      - sha256sum pwch > sha256sum.txt
+      - cd ../doveadm_wrapper
+      - sha256sum doveadm_wrapper >> ../pwch/sha256sum.txt
+      - cd ../pwch
+      - gpg --armor --output sha256sum.txt.asc --detach-sig sha256sum.txt
+    secrets: [gpg_release_key]
+
+  publish:
+    image: woodpeckerci/plugin-github-release
+    settings:
+      api_key:
+        from_secret: GITHUB_API_KEY
+      target: main
+      title: ${CI_COMMIT_TAG}
+      note: CHANGELOG.md
+      base_url: https://github.com
+      files:
+        - cmd/pwch/pwch
+        - cmd/doveadm_wrapper/doveadm_wrapper
+        - cmd/pwch/sha256sum.txt
+        - cmd/pwch/sha256sum.txt.asc
+
+when:
+  event: tag
+  branch: main

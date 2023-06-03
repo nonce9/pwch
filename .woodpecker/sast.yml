@@ -1,0 +1,19 @@
+---
+pipeline:
+  gosec:
+    group: scan
+    image: securego/gosec
+    pull: true
+    commands:
+      - gosec ./...
+
+  semgrep:
+    group: scan
+    image: returntocorp/semgrep
+    pull: true
+    commands:
+      - semgrep ci --config auto
+
+when:
+  event: [push, pull_request]
+  branch: main
