@@ -6,7 +6,7 @@
 ![License](https://img.shields.io/github/license/nonce9/pwch?style=flat&color=informational)
 
 pwch (short for *password change*) is a simple Go service for small mail server setups
-with a PostgeSQL user store and dovecot IMAP server.
+with a PostgreSQL user store and dovecot IMAP server.
 It will enable your users to change their password on their own via a pure html
 selfservice portal and encrypt dovecot mailboxes with per user keys.
 It's suppposed to be run on the same host as your dovecot IMAP server
