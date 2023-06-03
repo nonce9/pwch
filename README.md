@@ -1,9 +1,11 @@
-# pwch (/piːwɪtʃ/)
+![banner](screenshots/banner.png?raw=true)
 
 [![status-badge](https://ci.nonce.at/api/badges/nonce9/pwch/status.svg)](https://ci.nonce.at/nonce9/pwch)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nonce9/pwch/v2)](https://goreportcard.com/report/github.com/nonce9/pwch/v2)
 [![GitHub Release](https://img.shields.io/github/v/release/nonce9/pwch?style=flat&color=green&display_name=tag&sort=semver)](https://github.com/nonce9/pwch/releases)
 ![License](https://img.shields.io/github/license/nonce9/pwch?style=flat&color=informational)
+
+# pwch (/piːwɪtʃ/)
 
 pwch (short for *password change*) is a simple Go service for small mail server setups
 with a PostgreSQL user store and dovecot IMAP server.
