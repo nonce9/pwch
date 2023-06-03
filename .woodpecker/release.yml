@@ -58,7 +58,8 @@ pipeline:
       target: main
       title: ${CI_COMMIT_TAG}
       note: CHANGELOG.md
-      base_url: https://github.com
+      base_url: https://api.github.com
+      upload_url: https://uploads.github.com
       files:
         - cmd/pwch/pwch
         - cmd/doveadm_wrapper/doveadm_wrapper
