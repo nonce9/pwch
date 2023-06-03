@@ -11,8 +11,9 @@ import (
 	"syscall"
 )
 
-const version = "0.3.3"
 const allowedEmail = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.@"
+
+var version string
 
 func isAllowed(input string, allowed string) bool {
 	for i := 0; i < len(input); i++ {
@@ -30,7 +31,7 @@ func errorHandler(err error) {
 		}
 	}
 	fmt.Fprintln(os.Stderr, err.Error())
-	os.Exit(-1)
+	os.Exit(2)
 }
 
 func printBuildInfo() {
@@ -67,7 +68,8 @@ func main() {
 
 		// terminate imap sessions
 		if behavior == "kick" && os.Args[2] != "" && isAllowed(os.Args[2], allowedEmail) {
-			cmd := exec.Command("/bin/doveadm", "kick", os.Args[2])
+			var email = os.Args[2]
+			cmd := exec.Command("/bin/doveadm", "kick", email) //#nosec
 			err := cmd.Run()
 			if err != nil {
 				errorHandler(err)
@@ -81,23 +83,34 @@ func main() {
 			var oldHashString string
 			var newHashString string
 
-			fmt.Scanf("%s", &email)
-			fmt.Scanf("%s", &oldHashString)
-			fmt.Scanf("%s", &newHashString)
+			_, err := fmt.Scanf("%s", &email)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			_, err = fmt.Scanf("%s", &oldHashString)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			_, err = fmt.Scanf("%s", &newHashString)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			// prevent command injection
 			if !isAllowed(email, allowedEmail) {
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-U")
+			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-U") //#nosec
 
 			var input bytes.Buffer
 			input.Write([]byte(oldHashString + "\n" + newHashString + "\n"))
 
 			cmd.Stdin = &input
 
-			err := cmd.Run()
+			err = cmd.Run()
 			if err != nil {
 				errorHandler(err)
 			}
