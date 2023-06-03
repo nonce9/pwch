@@ -57,13 +57,6 @@ __Attention__: The wrapper script needs the setuid bit set.
 
 -----
 
-## Roadmap
-
-- [x] Support simultaneous password changes (multi-user support)
-- [ ] Improve test coverage with unit tests
-
------
-
 ## What it looks like
 
 The html and css files are fully customizable. This is what the default looks like.
@@ -129,7 +122,7 @@ ansible role to take care of the deployment if you like.
 4. Create the config file at `/etc/pwch/config.yml`. Set owner and group to `pwch`
 and remove all permissions to others.
 
-5. Create the html assets directory and copy the [html assets](html/) to this directory.
+5. Create the html assets directory and copy the [html assets](assets/html/) to this directory.
 ```
 # mkdir /usr/local/src/pwch
 ```
@@ -184,3 +177,18 @@ select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
 ```
 
 3. When the mailbox is encrypted tell your new user to change the password.
+
+-----
+
+## Integration testing
+
+Integration testing has to be done locally with vagrant and ansible.
+After installing these dependencies on your machine you have to build the pwch
+binaries and move them to the correct directories in order to deploy them with
+ansible on your vagrant box.
+
+A simple ` go build` in the `cmd/` directories should yield a `pwch` and a
+`doveadm_wrapper` binary. Place these binaries in `vagrant/roles/pwch/files/`.
+
+Then simply run `vagrant up` inside the `vagrant/` directory. If the ansible
+playbook does not start automatically, run `vagrant provision`.
