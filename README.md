@@ -4,7 +4,7 @@
 ![CodeQL](https://github.com/nonce9/pwch/actions/workflows/codeql.yml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nonce9/pwch/v2)](https://goreportcard.com/report/github.com/nonce9/pwch/v2)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nonce9/pwch?style=flat&color=green&display_name=tag&sort=semver)](https://github.com/nonce9/pwch/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nonce9/pwch?style=flat&color=blue&display_name=tag&sort=semver)](https://github.com/nonce9/pwch/releases)
 ![License](https://img.shields.io/github/license/nonce9/pwch?style=flat&color=informational)
 
 [![Signing Key](https://img.shields.io/badge/Signing%20Key-ffac3f?style=flat&link=https://nonce.at/public.asc)](https://nonce.at/public.asc)
