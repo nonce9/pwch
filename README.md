@@ -1,13 +1,29 @@
 ![banner](screenshots/banner.png?raw=true)
 
-[![status-badge](https://ci.nonce.at/api/badges/nonce9/pwch/status.svg)](https://ci.nonce.at/nonce9/pwch)
-![CodeQL](https://github.com/nonce9/pwch/actions/workflows/codeql.yml/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nonce9/pwch/v2)](https://goreportcard.com/report/github.com/nonce9/pwch/v2)
-
-[![GitHub Release](https://img.shields.io/github/v/release/nonce9/pwch?style=flat&color=blue&display_name=tag&sort=semver)](https://github.com/nonce9/pwch/releases)
-![License](https://img.shields.io/github/license/nonce9/pwch?style=flat&color=informational)
-
-[![Signing Key](https://img.shields.io/badge/Signing%20Key-ffac3f?style=flat&link=https://nonce.at/public.asc)](https://nonce.at/public.asc)
+<p align="center">
+  <a href="https://ci.nonce.at/nonce9/pwch" title="Build Status">
+    <img src="https://ci.nonce.at/api/badges/nonce9/pwch/status.svg" alt="status-badge" />
+  </a>
+  <a href="https://github.com/nonce9/pwch/actions/workflows/codeql.yml" title="CodeQL Status">
+    <img src="https://github.com/nonce9/pwch/actions/workflows/codeql.yml/badge.svg" alt="status-badge" />
+  </a>
+  <a href="https://goreportcard.com/report/github.com/nonce9/pwch" title="Go Report">
+    <img src="https://goreportcard.com/badge/github.com/nonce9/pwch" alt="status-badge" />
+  </a>
+<p/>
+<p align="center">
+  <a href="https://github.com/nonce9/pwch/releases" title="Latest Release">
+    <img src="https://img.shields.io/github/v/release/nonce9/pwch?style=flat&color=blue&display_name=tag&sort=semver" alt="status-badge" />
+  </a>
+  <a href="https://github.com/nonce9/pwch/blob/main/LICENSE" title="License">
+    <img src="https://img.shields.io/github/license/nonce9/pwch?style=flat&color=informational" alt="status-badge" />
+  </a>
+</p>
+<p align="center">
+  <a href="https://nonce.at/public.asc" title="Signing Key">
+    <img src="https://img.shields.io/badge/Signing%20Key-ffac3f?style=flat&link=https://nonce.at/public.asc" alt="status-badge" />
+  </a>
+</p>
 
 # pwch (/piːwɪtʃ/)
 
