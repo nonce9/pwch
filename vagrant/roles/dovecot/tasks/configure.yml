@@ -19,5 +19,7 @@
     mode: "{{ item.mode }}"
   notify: Restart dovecot
   loop:
-    - {name: dovecot.conf, mode: "0640"}
-    - {name: dovecot-sql.conf, mode: "0440"}
+    - name: dovecot.conf
+      mode: "0640"
+    - name: dovecot-sql.conf
+      mode: "0440"

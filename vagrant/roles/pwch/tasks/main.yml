@@ -89,10 +89,12 @@
   register: apparmor_policy
   when: pwch_apparmor_enabled
   loop:
-    - {src: apparmor_profile_pwch, dest: pwch}
-    - {src: apparmor_profile_doveadm_wrapper, dest: doveadm_wrapper}
+    - src: apparmor_profile_pwch
+      dest: pwch
+    - src: apparmor_profile_doveadm_wrapper
+      dest: doveadm_wrapper
 
-- name: Reload apparmor policies  # noqa no-handler
+- name: Reload apparmor policies  # noqa no-handler no-changed-when
   ansible.builtin.command: >
     apparmor_parser -r /etc/apparmor.d/usr.local.bin.pwch
     /etc/apparmor.d/usr.local.bin.doveadm_wrapper
