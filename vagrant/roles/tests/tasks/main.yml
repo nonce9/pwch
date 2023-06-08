@@ -11,7 +11,7 @@
     state: directory
     owner: vagrant
     group: vagrant
-    mode: 0750
+    mode: "0750"
   loop:
     - .config
     - .config/getmail
@@ -34,7 +34,7 @@
     dest: .config/getmail/{{ item }}
     owner: vagrant
     group: vagrant
-    mode: 0640
+    mode: "0640"
   loop:
     - getmailrc1
     - getmailrc2

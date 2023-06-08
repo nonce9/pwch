@@ -20,7 +20,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
 
 - name: Copy config file to host
   ansible.builtin.template:
@@ -28,7 +28,7 @@
     dest: /etc/pwch/config.yml
     owner: pwch
     group: pwch
-    mode: 0640
+    mode: "0640"
   notify: Restart pwch
 
 - name: Create assets directory
@@ -37,7 +37,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
 
 - name: Copy assets to host
   ansible.builtin.copy:
@@ -45,7 +45,7 @@
     dest: /usr/local/src/pwch/{{ item }}
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   loop:
     - changePassword.html
     - error.html
@@ -59,7 +59,7 @@
     dest: /usr/local/bin/pwch
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
   notify: Restart pwch
 
 - name: Copy doveadm_wrapper binary to host
@@ -68,7 +68,7 @@
     dest: /usr/local/bin/doveadm_wrapper
     owner: root
     group: pwch
-    mode: 04750
+    mode: "04750"
 
 - name: Copy unit file to host
   ansible.builtin.copy:
@@ -76,7 +76,7 @@
     dest: /etc/systemd/system/pwch.service
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: Reload systemd
 
 - name: Copy apparmor profile to host
@@ -85,7 +85,7 @@
     dest: /etc/apparmor.d/usr.local.bin.{{ item.dest }}
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   register: apparmor_policy
   when: pwch_apparmor_enabled
   loop:

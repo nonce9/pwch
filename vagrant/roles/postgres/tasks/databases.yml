@@ -21,7 +21,7 @@
     dest: /tmp/vmail.sql
     owner: postgres
     group: postgres
-    mode: 0600
+    mode: "0600"
 
 - name: Create vmail database tables
   become: true

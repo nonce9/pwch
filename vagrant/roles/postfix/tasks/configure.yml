@@ -26,7 +26,7 @@
     dest: /etc/postfix/master.cf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: Restart postfix
 
 - name: Create sql queries directory
@@ -35,7 +35,7 @@
     state: directory
     owner: root
     group: postfix
-    mode: 0755
+    mode: "0755"
 
 - name: Copy sql query files to host
   ansible.builtin.copy:
@@ -43,7 +43,7 @@
     dest: /etc/postfix/sql/{{ item }}
     owner: root
     group: postfix
-    mode: 0440
+    mode: "0440"
   notify: Restart postfix
   loop:
     - accounts.cf
