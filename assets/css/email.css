@@ -1,9 +1,25 @@
+:root {
+  --body-background-color: #f7f7f7;
+  --body-color: #000;
+  --form-background-color: #fff;
+  --form-font-color: #000;
+  --envelope-svg-fill-color: #ffac3f;
+  --envelope-svg-stroke-color: #000;
+  --key-svg-fill-color: #deaa87;
+  --key-svg-stroke-color: #000;
+  --form-fields-background-color: #f0f0f0;
+  --form-fields-border-color: #fff;
+  --submit-button-hover-color: #000;
+  --form-fields-focus-and-hover-color: #ffac3f;
+  --form-placeholder-color: #000;
+}
+
 body {
   display: flex;
   height: 100vh;
   margin: 0;
-  color: #fff;
-  background-color: #373737;
+  color: var(--body-color);
+  background-color: var(--body-background-color);
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: .02rem;
 }
@@ -24,44 +40,31 @@ main {
 }
 
 .card {
-  position: relative;
-  background-color: #303030;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--form-background-color);
   border-radius: 10px;
-}
-
-.card-header {
-  position: absolute;
-  top: -3rem;
-  left: 3rem;
-  background-color: #303030;
-  border: 3px solid #ffac3f;
-  border-radius: 100%;
-  padding: 1rem;
-}
-
-#envelope-svg {
-  position: absolute;
-  top: -3.5rem;
-  left: 3rem;
-  background-color: #303030;
-  border: 3px solid #ffac3f;
-  border-radius: 100%;
+  padding-top: 2rem;
 }
 
 #envelope-svg g {
-  fill: #ffac3f;
+  fill: var(--envelope-svg-fill-color);
+  stroke: var(--envelope-svg-stroke-color);
 }
 
 #email-form form, #password-form {
   display: flex;
   flex-direction: column;
-  background-color: #303030;
-  padding: 5rem 4rem 2rem 4rem;
+  background-color: var(--form-background-color);
+  padding: 2rem 4rem;
   border-radius: 10px;
 }
 
-#email-form form {
-  padding: 6rem 4rem 2rem 4rem;
+#key-svg g {
+  fill: var(--key-svg-fill-color);
+  stroke: var(--key-svg-stroke-color);
 }
 
 #password-form form {
@@ -80,8 +83,8 @@ main {
 }
 
 .input-field, .submit-button {
-  color: #fff;
-  background-color: #202020;
+  color: var(--form-font-color);
+  background-color: var(--form-fields-background-color);
   border: none;
   border-radius: 5px;
   padding: .5rem;
@@ -91,21 +94,21 @@ main {
 }
 
 .input-field {
-  border: 2px solid #303030;
+  border: 2px solid var(--form-fields-border-color);
 }
 
 .input-field:focus {
-  border: 2px solid #ffac3f;
+  border: 2px solid var(--form-fields-focus-and-hover-color);
 }
 
 .submit-button:hover {
-  color: #fff;
-  background-color: #ffac3f;
+  color: var(--submit-button-hover-color);
+  background-color: var(--form-fields-focus-and-hover-color);
   cursor: pointer;
 }
 
 ::placeholder {
-  color: #f7f7f7;
+  color: var(--form-placeholder-color);
   opacity: 1;
 }
 
@@ -130,3 +133,20 @@ ul > li:before {
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --body-background-color: #373737;
+    --body-color: #fff;
+    --form-background-color: #303030;
+    --form-font-color: #fff;
+    --envelope-svg-fill-color: #ffac3f;
+    --envelope-svg-stroke-color: #000;
+    --key-svg-fill-color: #deaa87;
+    --key-svg-stroke-color: #000;
+    --form-fields-background-color: #202020;
+    --form-fields-border-color: #303030;
+    --form-fields-focus-and-hover-color: #ffac3f;
+    --submit-button-hover-color: #fff;
+    --form-placeholder-color: #f7f7f7;
+  }
+}
