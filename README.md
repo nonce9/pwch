@@ -83,7 +83,7 @@ __Attention__: The wrapper script needs the setuid bit set.
 
 The html and css files are fully customizable. This is what the default looks like.
 
-![Page to submit email address](screenshots/submitEmail.jpg?raw=true)
+![Page to submit email address](screenshots/submitEmail.png?raw=true)
 
 ![Page to change password](screenshots/changePassword.png?raw=true)
 
