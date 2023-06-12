@@ -14,7 +14,7 @@ pipeline:
       - go get
       - go build
       - go install github.com/mattn/goveralls@latest
-      - $GOPATH/bin/goveralls -v -service drone.io
+      - ~/go/bin/goveralls -v -service drone.io
 
   doveadm_wrapper:
     group: build
