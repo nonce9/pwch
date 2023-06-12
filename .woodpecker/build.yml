@@ -13,7 +13,8 @@ pipeline:
       - cd cmd/pwch
       - go get
       - go build
-      - go test -v
+      - go install github.com/mattn/goveralls@latest
+      - goveralls -v -service drone.io
 
   doveadm_wrapper:
     group: build
