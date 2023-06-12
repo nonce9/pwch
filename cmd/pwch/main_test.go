@@ -1,8 +1,41 @@
 package main
 
 import (
+	"reflect"
 	"testing"
+	"time"
 )
+
+func TestAddToHashMap(t *testing.T) {
+	addToHashMap(oneTimeURLs.m, "test", time.Now())
+
+	var ti interface{} = time.Now()
+
+	i := 0
+	for _, v := range oneTimeURLs.m {
+		i++
+		if reflect.TypeOf(v) != reflect.TypeOf(ti) {
+			t.Error("value has a wrong type")
+		}
+	}
+
+	if i != 1 {
+		t.Error("unexpected size of hash map")
+	}
+}
+
+func TestDeleteFromHashMap(t *testing.T) {
+	deleteFromHashMap(oneTimeURLs.m, "test")
+
+	i := 0
+	for range oneTimeURLs.m {
+		i++
+	}
+
+	if i != 0 {
+		t.Error("unexpected size of hash map")
+	}
+}
 
 func TestEnforcePasswordPolicy(t *testing.T) {
 	cfg.PasswordPolicy.MinLength = 12
