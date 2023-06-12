@@ -1,16 +1,16 @@
 :root {
-  --body-background-color: #f7f7f7;
+  --body-background-color: #f5f5f5;
   --body-color: #000;
-  --form-background-color: #fff;
+  --form-background-color: #fcfcfc;
   --form-font-color: #000;
-  --envelope-svg-fill-color: #ffac3f;
-  --envelope-svg-stroke-color: #000;
+  --envelope-svg-fill-color: #aaa;
+  --envelope-svg-stroke-color: #fcfcfc;
   --key-svg-fill-color: #deaa87;
   --key-svg-stroke-color: #000;
   --form-fields-background-color: #f0f0f0;
-  --form-fields-border-color: #fff;
-  --submit-button-hover-color: #000;
-  --form-fields-focus-and-hover-color: #ffac3f;
+  --form-fields-border-color: #fcfcfc;
+  --submit-button-hover-color: #fff;
+  --form-fields-focus-and-hover-color: #000;
   --form-placeholder-color: #000;
 }
 
@@ -139,14 +139,14 @@ ul > li:before {
     --body-color: #fff;
     --form-background-color: #303030;
     --form-font-color: #fff;
-    --envelope-svg-fill-color: #ffac3f;
-    --envelope-svg-stroke-color: #000;
+    --envelope-svg-fill-color: #ccc;
+    --envelope-svg-stroke-color: #303030;
     --key-svg-fill-color: #deaa87;
     --key-svg-stroke-color: #000;
     --form-fields-background-color: #202020;
     --form-fields-border-color: #303030;
-    --form-fields-focus-and-hover-color: #ffac3f;
-    --submit-button-hover-color: #fff;
+    --form-fields-focus-and-hover-color: #ccc;
+    --submit-button-hover-color: #000;
     --form-placeholder-color: #f7f7f7;
   }
 }
