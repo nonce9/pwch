@@ -7,6 +7,11 @@
   <a href="https://github.com/nonce9/pwch/actions/workflows/codeql.yml" title="CodeQL Status">
     <img src="https://github.com/nonce9/pwch/actions/workflows/codeql.yml/badge.svg" alt="status-badge" />
   </a>
+</p>
+<p align="center">
+  <a href='https://coveralls.io/github/nonce9/pwch?branch=main' title="Coverage Status">
+    <img src='https://coveralls.io/repos/github/nonce9/pwch/badge.svg?branch=main' alt='Coverage Status' />
+  </a>
   <a href="https://goreportcard.com/report/github.com/nonce9/pwch" title="Go Report">
     <img src="https://goreportcard.com/badge/github.com/nonce9/pwch" alt="status-badge" />
   </a>

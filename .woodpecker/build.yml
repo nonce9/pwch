@@ -13,7 +13,6 @@ pipeline:
       - cd cmd/pwch
       - go get
       - go build
-      - go test -v
 
   doveadm_wrapper:
     group: build
