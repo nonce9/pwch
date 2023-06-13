@@ -41,13 +41,14 @@ installation.
 
 -----
 
-## WARNING
+## ATTENTION
 
-Try this software with great care only. DO NOT simply deploy it on your
-production mail server without this consideration:
+Be sure to backup important emails BEFORE following the setup instructions.
 
-- pwch will encrypt your user mailboxes. If anything fails these mails are gone
-forever.
+You'll have to initially encrypt mailboxes for your users manually 
+(see [here](https://github.com/nonce9/pwch#create-new-mail-user)).
+
+pwch will handle all subsequent reencryptions during a password change.
 
 -----
 
