@@ -1,7 +1,10 @@
 package main
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -62,5 +65,28 @@ func TestEnforcePasswordPolicy(t *testing.T) {
 		if got != want {
 			t.Errorf("got %t want %t; Message: %s", got, want, message)
 		}
+	}
+}
+
+func TestSubmitEmailHandler(t *testing.T) {
+	cfg.AssetsPath = "../../assets/html"
+
+	req, err := http.NewRequest("GET", "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(submitEmailHandler)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v, want %v", status, http.StatusOK)
+	}
+
+	expected := "<title>Password Reset</title>"
+	if !strings.Contains(rr.Body.String(), expected) {
+		t.Errorf("handler returned unexpected body: %v not found", expected)
 	}
 }
