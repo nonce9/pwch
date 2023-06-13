@@ -86,14 +86,13 @@ type config struct {
 	} `yaml:"otl"`
 }
 
-/* this is where valid one time URLs are stored
- *
- * key   = random token + username + domain
- * value = time at creation of entry
- *
- * entries are deleted either after the password
- * got changed or when the entry expires
- */
+// this is where valid one time URLs are stored
+//
+// key   = random token + username + domain
+// value = time at creation of entry
+//
+// entries are deleted either after the password
+// got changed or when the entry expires
 var oneTimeURLs = struct {
 	sync.RWMutex
 	m map[string]time.Time
