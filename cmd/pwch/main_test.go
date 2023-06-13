@@ -49,7 +49,7 @@ func TestEnforcePasswordPolicy(t *testing.T) {
 
 	passwords["fWO5pnZ"] = false                     // too short
 	passwords["poXANQPFPpg94lYBpvvpeKnsoth"] = false // too long
-	passwords["POXANQPFPPG94LYBPVVPEKNSOTH"] = false // no lower case
+	passwords["POXANQPFPPG94LYBPVVPEK"] = false      // no lower case
 	passwords["caieg7vd0x08i9hfz#qqyq"] = false      // no upper case
 	passwords["dTtdXllvOQNYBUsTA+VTKC"] = false      // no digit
 	passwords["0oI0nDfKEE4hhh2YpZKsMn"] = false      // no symbol
