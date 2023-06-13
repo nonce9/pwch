@@ -215,7 +215,7 @@ After installing these dependencies on your machine you have to build the pwch
 binaries and move them to the correct directories in order to deploy them with
 ansible on your vagrant box.
 
-A simple ` go build` in the `cmd/` directories should yield a `pwch` and a
+A simple `go build` in the `cmd/` directories should yield a `pwch` and a
 `doveadm_wrapper` binary. Place these binaries in `vagrant/roles/pwch/files/`.
 
 Then simply run `vagrant up` inside the `vagrant/` directory. If the ansible
