@@ -52,7 +52,7 @@ func TestEnforcePasswordPolicy(t *testing.T) {
 	passwords["caieg7vd0x08i9hfz#qqyq"] = false      // no upper case
 	passwords["dTtdXllvOQNYBUsTA+VTKC"] = false      // no digit
 	passwords["0oI0nDfKEE4hhh2YpZKsMn"] = false      // no symbol
-	passwords[";c>$:p3p!>LFloN/x3!;yl"] = true
+	passwords[";c>$:p3p!>LF oN/x3!;yl"] = true
 
 	for k, v := range passwords {
 		got, message := enforcePasswordPolicy(k)
