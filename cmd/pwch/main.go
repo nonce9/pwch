@@ -505,10 +505,12 @@ func enforcePasswordPolicy(password string) (bool, string) {
 		return false, fmt.Sprintf("Please enter at max a %d character long password", cfg.PasswordPolicy.MaxLength)
 	}
 
-	hasLower := false
-	hasUpper := false
-	hasNumber := false
-	hasSpecial := false
+	// initialize with opposite of config value
+	// policies set to "false" will therefore init with "true" and will not change
+	hasLower := !cfg.PasswordPolicy.LowerCase
+	hasUpper := !cfg.PasswordPolicy.UpperCase
+	hasNumber := !cfg.PasswordPolicy.Digits
+	hasSpecial := !cfg.PasswordPolicy.SepcialChar
 
 	for _, char := range password {
 		switch {
