@@ -22,6 +22,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -31,7 +32,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime/debug"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -201,66 +201,6 @@ func templatePasswordErrorPage(w http.ResponseWriter, errorMessage string) {
 		log.Print(err)
 		log.Print("ERROR: cannot template error page")
 	}
-}
-
-func enforcePasswordPolicy(password string) (bool, string) {
-
-	// initialize with opposite of config value
-	// policies set to "false" will therefore init with "true" and will not change
-	hasLower := !cfg.PasswordPolicy.LowerCase
-	hasUpper := !cfg.PasswordPolicy.UpperCase
-	hasNumber := !cfg.PasswordPolicy.Digits
-	hasSpecial := !cfg.PasswordPolicy.SepcialChar
-	errorMessage := "Undefined error"
-
-	if len(password) < cfg.PasswordPolicy.MinLength {
-		return false, "Please enter at least a " +
-			strconv.Itoa(cfg.PasswordPolicy.MinLength) + " character long password"
-	}
-
-	if len(password) > cfg.PasswordPolicy.MaxLength {
-		return false, "Please enter at max a " +
-			strconv.Itoa(cfg.PasswordPolicy.MaxLength) + " character long password"
-	}
-
-	for _, char := range password {
-		switch {
-		case unicode.IsNumber(char):
-			hasNumber = true
-		case unicode.IsLower(char):
-			hasLower = true
-		case unicode.IsUpper(char):
-			hasUpper = true
-		case unicode.IsPunct(char):
-			hasSpecial = true
-		case unicode.IsSpace(char):
-			hasSpecial = true
-		case unicode.IsSymbol(char):
-			hasSpecial = true
-		}
-	}
-
-	if hasLower && hasUpper && hasNumber && hasSpecial {
-		return true, "Success"
-	}
-
-	if !hasLower {
-		errorMessage = "Please enter at least one lower case character"
-	}
-
-	if !hasUpper {
-		errorMessage = "Please enter at least one upper case character"
-	}
-
-	if !hasNumber {
-		errorMessage = "Please enter at least one digit"
-	}
-
-	if !hasSpecial {
-		errorMessage = "Please enter at least one special character"
-	}
-
-	return false, errorMessage
 }
 
 func sendOneTimeLink(username, domain string) {
@@ -513,88 +453,28 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	domain := r.URL.Query().Get("domain")
 
-	email := username + "@" + domain
-
 	oldPass := r.FormValue("current-password")
 	newPass := r.FormValue("new-password")
 	confirmPass := r.FormValue("confirm-password")
 
-	var url = "changePassword?token=" + token +
-		"&username=" + username +
-		"&domain=" + domain
+	url := fmt.Sprintf("changePassword?token=%s&username=%s&domain=%s", token, username, domain)
 
-	_, ok := oneTimeURLs.m[url]
-	if !ok {
-		http.Redirect(w, r, "/", 302)
+	if _, ok := oneTimeURLs.m[url]; !ok {
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
-	enforced, enforcementError := enforcePasswordPolicy(newPass)
-
-	if !((newPass == confirmPass) && (oldPass != newPass) && enforced) {
-		switch {
-
-		case newPass != confirmPass:
-			templatePasswordErrorPage(w, "Passwords do not match")
-			return
-
-		case oldPass == newPass:
-			templatePasswordErrorPage(w, "You are trying to set the same password again")
-			return
-
-		case !enforced:
-			templatePasswordErrorPage(w, enforcementError)
-			return
-
-		default:
-			break
-		}
-	}
-
-	if !passwordMatches(username, domain, oldPass, newPass) {
-		templatePasswordErrorPage(w, "Current password does not match")
+	if err := validatePasswordFields(newPass, confirmPass, oldPass); err != nil {
+		templatePasswordErrorPage(w, err.Error())
 		return
 	}
 
-	hash, err := hashPassword(newPass)
-
-	if err != nil {
-		log.Print(err)
+	if enforced, errMessage := enforcePasswordPolicy(newPass); enforced == false {
+		templatePasswordErrorPage(w, errMessage)
 		return
 	}
 
-	var db = connectToDatabase()
-
-	ctx := context.Background()
-
-	// Get a Tx for making transaction requests.
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Print("ERROR: can't begin transaction")
-	}
-
-	// Defer a rollback in case anything fails.
-	defer tx.Rollback()
-
-	_, err = tx.ExecContext(ctx, "UPDATE accounts SET password = $1 WHERE username = $2 AND domain = $3;",
-		string(hash), username, domain)
-	if err != nil {
-		log.Print("ERROR: password update query failed")
-		_ = closeDatabase(db)
-		return
-	}
-
-	if reencryptMailbox(email, oldPass, newPass) {
-		err = tx.Commit()
-		if err != nil {
-			log.Fatal(err)
-		}
-		_ = closeDatabase(db)
-		log.Print("INFO: Password successfully changed for " + email)
-
-		terminateIMAPSessions(email)
-	} else {
-		_ = closeDatabase(db)
+	if err := updatePasswordInDatabase(username, domain, newPass, oldPass); err != nil {
 		templatePasswordErrorPage(w, "Internal error: Password not changed")
 		return
 	}
@@ -602,6 +482,105 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	deleteFromHashMap(oneTimeURLs.m, url)
 	log.Print("INFO: Deleted " + url + " from map")
 	http.ServeFile(w, r, cfg.AssetsPath+"/success.html")
+}
+
+func validatePasswordFields(newPass, confirmPass, oldPass string) error {
+	if newPass != confirmPass {
+		return errors.New("Passwords do not match")
+	}
+
+	if oldPass == newPass {
+		return errors.New("You are trying to set the same password again")
+	}
+
+	return nil
+}
+
+func enforcePasswordPolicy(password string) (bool, string) {
+	if len(password) < cfg.PasswordPolicy.MinLength {
+		return false, fmt.Sprintf("Please enter at least a %d character long password", cfg.PasswordPolicy.MinLength)
+	}
+
+	if len(password) > cfg.PasswordPolicy.MaxLength {
+		return false, fmt.Sprintf("Please enter at max a %d character long password", cfg.PasswordPolicy.MaxLength)
+	}
+
+	hasLower := false
+	hasUpper := false
+	hasNumber := false
+	hasSpecial := false
+
+	for _, char := range password {
+		switch {
+		case unicode.IsNumber(char):
+			hasNumber = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsPunct(char), unicode.IsSpace(char), unicode.IsSymbol(char):
+			hasSpecial = true
+		}
+	}
+
+	if hasLower && hasUpper && hasNumber && hasSpecial {
+		return true, "Success"
+	}
+
+	errorMessage := "Undefined error"
+	if !hasLower {
+		errorMessage = "Please enter at least one lower case character"
+	} else if !hasUpper {
+		errorMessage = "Please enter at least one upper case character"
+	} else if !hasNumber {
+		errorMessage = "Please enter at least one digit"
+	} else if !hasSpecial {
+		errorMessage = "Please enter at least one special character"
+	}
+
+	return false, errorMessage
+}
+
+func updatePasswordInDatabase(username, domain, newPass, oldPass string) error {
+	hash, err := hashPassword(newPass)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	db := connectToDatabase()
+	defer closeDatabase(db)
+
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Print("ERROR: can't begin transaction")
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(ctx, "UPDATE accounts SET password = $1 WHERE username = $2 AND domain = $3;",
+		string(hash), username, domain)
+	if err != nil {
+		log.Print("ERROR: password update query failed")
+		return err
+	}
+
+	email := username + "@" + domain
+	if !reencryptMailbox(email, oldPass, newPass) {
+		return errors.New("Internal error: Password not changed")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	log.Print("INFO: Password successfully changed for " + email)
+	terminateIMAPSessions(email)
+
+	return nil
 }
 
 func main() {
