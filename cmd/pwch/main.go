@@ -474,7 +474,7 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := updatePasswordInDatabase(username, domain, newPass, oldPass); err != nil {
+	if err := updatePassword(username, domain, newPass, oldPass); err != nil {
 		templatePasswordErrorPage(w, "Internal error: Password not changed")
 		return
 	}
@@ -543,7 +543,8 @@ func enforcePasswordPolicy(password string) (bool, string) {
 	return false, errorMessage
 }
 
-func updatePasswordInDatabase(username, domain, newPass, oldPass string) error {
+// updates password in database, reencrypts mailbox and terminates IMAP sessions
+func updatePassword(username, domain, newPass, oldPass string) error {
 	hash, err := hashPassword(newPass)
 	if err != nil {
 		log.Print(err)
