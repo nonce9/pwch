@@ -448,30 +448,26 @@ func submitEmailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func emailSendHandler(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// rate limiting
-	if time.Now().Sub(lastEmailSent) < (5 * time.Second) {
-		w.WriteHeader(http.StatusTooEarly)
-		fmt.Fprintf(w, "Too early. Please try again.")
-		return
-	}
-
+	email := r.FormValue("email")
 	if !isValidEmail(email) {
 		templatePasswordErrorPage(w, "Please enter a valid email address")
 		return
 	}
 
+	// rate limiting
+	if time.Since(lastEmailSent) < 5*time.Second {
+		http.Error(w, "Too early. Please try again.", http.StatusTooEarly)
+		return
+	}
+
 	http.ServeFile(w, r, cfg.AssetsPath+"/emailSent.html")
 
-	enabled, mailUser := emailEnabled(email)
-
-	if enabled {
+	if enabled, mailUser := emailEnabled(email); enabled {
 		lastEmailSent = time.Now()
 		go sendOneTimeLink(mailUser.Username, mailUser.Domain)
 	}
@@ -482,13 +478,10 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	domain := r.URL.Query().Get("domain")
 
-	var url = "changePassword?token=" + token +
-		"&username=" + username +
-		"&domain=" + domain
+	url := fmt.Sprintf("changePassword?token=%s&username=%s&domain=%s", token, username, domain)
 
-	_, ok := oneTimeURLs.m[url]
-	if !ok {
-		fmt.Fprintf(w, "Link expired")
+	if _, ok := oneTimeURLs.m[url]; !ok {
+		fmt.Fprint(w, "Link expired")
 		return
 	}
 
@@ -506,9 +499,10 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles(cfg.AssetsPath + "/changePassword.html")
 	if err != nil {
 		log.Print(err)
+		return
 	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
+
+	if err := tmpl.Execute(w, data); err != nil {
 		log.Print(err)
 		log.Print("ERROR: cannot execute template")
 	}
