@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -157,6 +158,28 @@ func TestValidatePasswordFields(t *testing.T) {
 	}
 }
 
+/*
+func TestUpdatePassword(t *testing.T) {
+
+	cfg.Wrapper.Path = "/pwch/cmd/doveadm_wrapper"
+	cfg.DB.Host = "/run/postgresql"
+	cfg.DB.DBName = "vmail"
+	cfg.DB.User = "vmail"
+	cfg.DB.Password = "password"
+	cfg.DB.SSLMode = "disable"
+
+	err := updatePassword("pwch1", "localdomain", "newPassword", "password")
+
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
+*/
+
+//
+// handler section
+//
+
 func TestSubmitEmailHandler(t *testing.T) {
 	cfg.AssetsPath = "../../assets/html"
 
@@ -172,6 +195,38 @@ func TestSubmitEmailHandler(t *testing.T) {
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v, want %v", status, http.StatusOK)
+	}
+
+	expected := "<title>Password Reset</title>"
+	if !strings.Contains(rr.Body.String(), expected) {
+		t.Errorf("handler returned unexpected body: %v not found", expected)
+	}
+}
+
+func TestEmailSendHandler(t *testing.T) {
+	cfg.DB.Host = "/run/postgresql"
+	cfg.DB.DBName = "vmail"
+	cfg.DB.User = "vmail"
+	cfg.DB.Password = "password"
+	cfg.DB.SSLMode = "disable"
+
+	form := url.Values{}
+	form.Add("email", "pwch1@localdomain")
+	req, err := http.NewRequest("POST", "/emailSend", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.PostForm = form
+
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
+
+	// Call the handler function
+	emailSendHandler(rr, req)
+
+	// Check the response status code
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected status code %d, but got %d", http.StatusOK, rr.Code)
 	}
 
 	expected := "<title>Password Reset</title>"
