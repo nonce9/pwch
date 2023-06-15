@@ -4,7 +4,7 @@ pipeline:
     image: localhost/pwch-full:latest
     commands:
       - /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-      - cd /pwch/cmd/pwch
+      - cd cmd/pwch
       - go test -v
 
 when:
