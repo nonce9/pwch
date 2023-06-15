@@ -5,7 +5,10 @@ pipeline:
     commands:
       - /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
       - cd cmd/pwch
-      - go test -v
+      - go install github.com/mattn/goveralls@latest
+      - goveralls -v -service drone.io
+    secrets:
+      - coveralls_token
 
 when:
   event: [push, pull_request]
