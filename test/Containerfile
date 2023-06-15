@@ -48,8 +48,14 @@ RUN groupadd -g 5000 vmail \
 COPY --chown=root:dovecot --chmod=0640 dovecot/dovecot.conf /etc/dovecot
 COPY --chown=root:dovecot --chmod=0440 dovecot/dovecot-sql.conf /etc/dovecot
 
-# set pwch config
-COPY pwch/config.yml /etc/pwch/config.yml
+# encrypt mailboxes
+ARG PASSWORD=e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716
+
+RUN pg_ctlcluster 14/main start \
+&& /usr/sbin/dovecot -c /etc/dovecot/dovecot.conf \
+&& doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch1@localdomain -U \
+&& doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
+&& doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
 
 # copy supervisord config
 COPY supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
