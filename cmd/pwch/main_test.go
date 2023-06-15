@@ -158,7 +158,7 @@ func TestValidatePasswordFields(t *testing.T) {
 }
 
 func TestSubmitEmailHandler(t *testing.T) {
-	cfg.AssetsPath = "/pwch/assets/html"
+	cfg.AssetsPath = "../../assets/html"
 
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
