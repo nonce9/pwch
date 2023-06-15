@@ -4,9 +4,11 @@ pipeline:
     image: localhost/pwch-full:latest
     commands:
       - /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-      - cd cmd/pwch
+      - cd cmd/doveadm_wrapper
+      - go build
+      - cd ../pwch
       - go install github.com/mattn/goveralls@latest
-      - goveralls -v -service drone.io
+      - /root/go/bin/goveralls -v -service drone.io
     secrets:
       - coveralls_token
 
