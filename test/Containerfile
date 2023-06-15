@@ -57,6 +57,10 @@ RUN pg_ctlcluster 14/main start \
 && doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
 && doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
 
+# symlink doveadm_wrapper
+RUN mkdir /pwch \
+    && ln -s /pwch/cmd/doveadm_wrapper/doveadm_wrapper /usr/local/bin/doveadm_wrapper
+
 # copy supervisord config
 COPY supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
