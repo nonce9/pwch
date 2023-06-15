@@ -1,46 +1,47 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestAddToHashMap(t *testing.T) {
-	addToHashMap(oneTimeURLs.m, "test", time.Now())
+func TestDeleteFromHashMap(t *testing.T) {
+	m := oneTimeURLs.m
+	key := "test_key"
+	value := time.Now()
 
-	var ti interface{} = time.Now()
+	// Add a value to the map
+	m[key] = value
 
-	i := 0
-	for _, v := range oneTimeURLs.m {
-		i++
-		if reflect.TypeOf(v) != reflect.TypeOf(ti) {
-			t.Error("value has a wrong type")
-		}
-	}
+	// Call the function to delete the key from the map
+	deleteFromHashMap(m, key)
 
-	if i != 1 {
-		t.Error("unexpected size of hash map")
+	// Check that the key has been removed
+	if _, ok := m[key]; ok {
+		t.Errorf("Expected key '%s' to be deleted, but it still exists in the map", key)
 	}
 }
 
-func TestDeleteFromHashMap(t *testing.T) {
-	deleteFromHashMap(oneTimeURLs.m, "test")
+func TestAddToHashMap(t *testing.T) {
+	m := oneTimeURLs.m
+	key := "test_key"
+	value := time.Now()
 
-	i := 0
-	for range oneTimeURLs.m {
-		i++
-	}
+	// Call the function to add a key-value pair to the map
+	addToHashMap(m, key, value)
 
-	if i != 0 {
-		t.Error("unexpected size of hash map")
+	// Check that the key-value pair exists in the map
+	if val, ok := m[key]; !ok || val != value {
+		t.Errorf("Expected key-value pair '%s:%v' to be added to the map, but it is not present or the value is incorrect", key, value)
 	}
 }
 
 func TestEnforcePasswordPolicy(t *testing.T) {
+
 	cfg.PasswordPolicy.MinLength = 12
 	cfg.PasswordPolicy.MaxLength = 24
 	cfg.PasswordPolicy.LowerCase = true
@@ -48,28 +49,116 @@ func TestEnforcePasswordPolicy(t *testing.T) {
 	cfg.PasswordPolicy.Digits = true
 	cfg.PasswordPolicy.SepcialChar = true
 
-	passwords := make(map[string]bool)
+	// Test case 1: Valid password that meets all requirements
+	password := "StrongPassword123!"
+	valid, message := enforcePasswordPolicy(password)
+	if !valid {
+		t.Errorf("Expected valid password for input '%s', but got invalid", password)
+	}
+	if message != "Success" {
+		t.Errorf("Expected success message for valid password, but got: %s", message)
+	}
 
-	passwords["fWO5pnZ"] = false                     // too short
-	passwords["poXANQPFPpg94lYBpvvpeKnsoth"] = false // too long
-	passwords["POXANQPFPPG94LYBPVVPEK"] = false      // no lower case
-	passwords["caieg7vd0x08i9hfz#qqyq"] = false      // no upper case
-	passwords["dTtdXllvOQNYBUsTA+VTKC"] = false      // no digit
-	passwords["0oI0nDfKEE4hhh2YpZKsMn"] = false      // no symbol
-	passwords[";c>$:p3p!>LF oN/x3!;yl"] = true
+	// Test case 2: Password with insufficient length
+	password = "short"
+	valid, message = enforcePasswordPolicy(password)
+	if valid {
+		t.Errorf("Expected invalid password for input '%s', but got valid", password)
+	}
+	expectedMessage := fmt.Sprintf("Please enter at least a %d character long password", cfg.PasswordPolicy.MinLength)
+	if message != expectedMessage {
+		t.Errorf("Expected error message '%s' for password with insufficient length, but got: %s", expectedMessage, message)
+	}
 
-	for k, v := range passwords {
-		got, message := enforcePasswordPolicy(k)
-		want := v
+	// Test case 3: Password exceeding maximum length
+	password = "thispasswordexceedsthemaximumallowedlength"
+	valid, message = enforcePasswordPolicy(password)
+	if valid {
+		t.Errorf("Expected invalid password for input '%s', but got valid", password)
+	}
+	expectedMessage = fmt.Sprintf("Please enter at max a %d character long password", cfg.PasswordPolicy.MaxLength)
+	if message != expectedMessage {
+		t.Errorf("Expected error message '%s' for password exceeding maximum length, but got: %s", expectedMessage, message)
+	}
 
-		if got != want {
-			t.Errorf("got %t want %t; Message: %s", got, want, message)
-		}
+	// Test case 4: Password missing lower case character
+	password = "PASSWORD123!"
+	valid, message = enforcePasswordPolicy(password)
+	if valid {
+		t.Errorf("Expected invalid password for input '%s', but got valid", password)
+	}
+	expectedMessage = "Please enter at least one lower case character"
+	if message != expectedMessage {
+		t.Errorf("Expected error message '%s' for password missing lower case character, but got: %s", expectedMessage, message)
+	}
+
+	// Test case 5: Password missing upper case character
+	password = "password123!"
+	valid, message = enforcePasswordPolicy(password)
+	if valid {
+		t.Errorf("Expected invalid password for input '%s', but got valid", password)
+	}
+	expectedMessage = "Please enter at least one upper case character"
+	if message != expectedMessage {
+		t.Errorf("Expected error message '%s' for password missing upper case character, but got: %s", expectedMessage, message)
+	}
+
+	// Test case 6: Password missing digit
+	password = "PasswordWithoutDigit!"
+	valid, message = enforcePasswordPolicy(password)
+	if valid {
+		t.Errorf("Expected invalid password for input '%s', but got valid", password)
+	}
+	expectedMessage = "Please enter at least one digit"
+	if message != expectedMessage {
+		t.Errorf("Expected error message '%s' for password missing digit, but got: %s", expectedMessage, message)
+	}
+
+	// Test case 7: Password missing special character
+	password = "PasswordNoSpecial123"
+	valid, message = enforcePasswordPolicy(password)
+	if valid {
+		t.Errorf("Expected invalid password for input '%s', but got valid", password)
+	}
+	expectedMessage = "Please enter at least one special character"
+	if message != expectedMessage {
+		t.Errorf("Expected error message '%s' for password missing special character, but got: %s", expectedMessage, message)
+	}
+}
+
+func TestValidatePasswordFields(t *testing.T) {
+	newPass := "newPassword"
+	confirmPass := "newPassword"
+	oldPass := "oldPassword"
+
+	// Test case 1: Valid input
+	err := validatePasswordFields(newPass, confirmPass, oldPass)
+	if err != nil {
+		t.Errorf("Expected no error for valid input, but got: %s", err.Error())
+	}
+
+	// Test case 2: Mismatched passwords
+	confirmPass = "wrongPassword"
+	err = validatePasswordFields(newPass, confirmPass, oldPass)
+	if err == nil {
+		t.Error("Expected error for mismatched passwords, but got no error")
+	} else if err.Error() != "Passwords do not match" {
+		t.Errorf("Expected error message 'Passwords do not match', but got: %s", err.Error())
+	}
+
+	// Test case 3: Same old and new passwords
+	newPass = "oldPassword"
+	confirmPass = "oldPassword"
+	err = validatePasswordFields(newPass, confirmPass, oldPass)
+	if err == nil {
+		t.Error("Expected error for setting same password again, but got no error")
+	} else if err.Error() != "You are trying to set the same password again" {
+		t.Errorf("Expected error message 'You are trying to set the same password again', but got: %s", err.Error())
 	}
 }
 
 func TestSubmitEmailHandler(t *testing.T) {
-	cfg.AssetsPath = "../../assets/html"
+	cfg.AssetsPath = "/pwch/assets/html"
 
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
