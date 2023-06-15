@@ -1,0 +1,15 @@
+proxy_read_maps = proxy:pgsql:/etc/postfix/sql/aliases.cf
+                  proxy:pgsql:/etc/postfix/sql/accounts.cf
+                  proxy:pgsql:/etc/postfix/sql/domains.cf
+                  proxy:pgsql:/etc/postfix/sql/sender-login-maps.cf
+
+virtual_alias_maps = proxy:pgsql:/etc/postfix/sql/aliases.cf
+virtual_mailbox_maps = proxy:pgsql:/etc/postfix/sql/accounts.cf
+virtual_mailbox_domains = proxy:pgsql:/etc/postfix/sql/domains.cf
+local_recipient_maps = $virtual_mailbox_maps
+
+mua_relay_restrictions = permit_mynetworks,permit_sasl_authenticated,reject
+mua_sender_restrictions = permit_mynetworks,permit_sasl_authenticated,reject
+mua_client_restrictions = permit_mynetworks,permit_sasl_authenticated,reject
+
+virtual_transport = lmtp:unix:private/dovecot-lmtp

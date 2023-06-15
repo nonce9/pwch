@@ -1,0 +1,54 @@
+FROM docker.io/ubuntu:latest
+
+# install dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    golang \
+    sudo \
+    supervisor \
+    postgresql \
+    postfix \
+    postfix-pgsql \
+    dovecot-imapd \
+    dovecot-lmtpd \
+    dovecot-pgsql \
+    && apt-get clean
+
+# copy postgres config files and database sql script
+COPY postgres/postgres.conf /etc/postgresql/14/main/conf.d/custom.conf
+COPY postgres/pg_hba.conf /etc/postgresql/14/main
+COPY postgres/postgres.sql /root
+
+# prepare database
+RUN pg_ctlcluster 14/main start \
+    && sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;;" \
+    && sudo -u postgres psql -c "CREATE USER vmail with password 'password';" \
+    && sudo -u postgres psql -c "CREATE DATABASE vmail;" \
+    && sudo -u postgres psql vmail < /root/postgres.sql
+
+# configure postfix
+COPY postfix/main.cf /root/main.cf
+
+RUN cat /root/main.cf >> /etc/postfix/main.cf \
+    && mkdir /etc/postfix/sql
+
+COPY postfix/master.cf /etc/postfix
+COPY postfix/accounts.cf /etc/postfix/sql
+COPY postfix/aliases.cf /etc/postfix/sql
+COPY postfix/domains.cf /etc/postfix/sql
+COPY postfix/sender-login-maps.cf /etc/postfix/sql
+
+# configure dovecot
+RUN groupadd -g 5000 vmail \
+    && useradd -c "vmail user" -s /usr/sbin/nologin -d /var/vmail -u 5000 -g vmail -m -r vmail \
+    && mkdir -p /var/vmail/mailboxes \
+    && chown -R vmail:vmail /var/vmail \
+    && chmod -R 0770 /var/vmail \
+    && rm -rf /etc/dovecot/conf.d /etc/dovecot/dovecot-dict-auth.conf.ext /etc/dovecot/dovecot-dict-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext
+
+COPY --chown=root:dovecot --chmod=0640 dovecot/dovecot.conf /etc/dovecot
+COPY --chown=root:dovecot --chmod=0440 dovecot/dovecot-sql.conf /etc/dovecot
+
+# copy supervisord config
+COPY supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
