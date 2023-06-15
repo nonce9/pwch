@@ -4,7 +4,6 @@ pipeline:
     image: localhost/pwch-full:latest
     commands:
       - /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-      - git clone -b ${CI_COMMIT_SOURCE_BRANCH} ${CI_REPO_CLONE_URL} /pwch
       - cd /pwch/cmd/pwch
       - go test -v
 
