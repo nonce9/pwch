@@ -2,7 +2,6 @@ FROM docker.io/ubuntu:latest
 
 # install dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    git \
     golang \
     sudo \
     supervisor \
