@@ -52,10 +52,7 @@ type config struct {
 	Domain     string `yaml:"domain"`
 	URLPrefix  string `yaml:"url_prefix"`
 	AssetsPath string `yaml:"assets_path"`
-	Wrapper    struct {
-		Path string `yaml:"path"`
-	} `yaml:"wrapper"`
-	Server struct {
+	Server     struct {
 		ListenAddress string `yaml:"listen_address"`
 		Port          string `yaml:"port"`
 	} `yaml:"server"`
