@@ -52,7 +52,10 @@ type config struct {
 	Domain     string `yaml:"domain"`
 	URLPrefix  string `yaml:"url_prefix"`
 	AssetsPath string `yaml:"assets_path"`
-	Server     struct {
+	Wrapper    struct {
+		Path string `yaml:"path"`
+	} `yaml:"wrapper"`
+	Server struct {
 		ListenAddress string `yaml:"listen_address"`
 		Port          string `yaml:"port"`
 	} `yaml:"server"`
@@ -330,53 +333,49 @@ func passwordMatches(username string, domain string, oldPass string, newPass str
 	return false
 }
 
-func reencryptMailbox(email string, oldPass string, newPass string) bool {
-	oldHash := sha3.New512()
-	newHash := sha3.New512()
+func reencryptMailbox(email, oldPass, newPass string) error {
+	oldHash := sha3.Sum512([]byte(oldPass))
+	newHash := sha3.Sum512([]byte(newPass))
 
-	oldHash.Write([]byte(oldPass))
-	newHash.Write([]byte(newPass))
+	oldHashString := hex.EncodeToString(oldHash[:])
+	newHashString := hex.EncodeToString(newHash[:])
 
-	oldHashString := hex.EncodeToString(oldHash.Sum(nil))
-	newHashString := hex.EncodeToString(newHash.Sum(nil))
-
-	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "swap")
+	cmd := exec.Command(cfg.Wrapper.Path+"/doveadm_wrapper", "swap")
 
 	var input bytes.Buffer
-	input.Write([]byte(email + "\n" + oldHashString + "\n" + newHashString + "\n"))
+	input.WriteString(email + "\n" + oldHashString + "\n" + newHashString + "\n")
 
 	cmd.Stdin = &input
 
 	err := cmd.Run()
 	if err == nil {
-		log.Print("INFO: Successfully swapped keys for " + email)
-		return true
+		log.Printf("INFO: Successfully swapped keys for %s", email)
+		return nil
 	}
 
-	log.Print("ERROR: Can't swap keys for " + email)
+	log.Printf("ERROR: Can't swap keys for %s", email)
 	log.Print(err)
-	return false
+	return err
 }
 
-func terminateIMAPSessions(email string) bool {
-	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "kick")
+func terminateIMAPSessions(email string) error {
+	cmd := exec.Command(cfg.Wrapper.Path+"/doveadm_wrapper", "kick")
 	err := cmd.Run()
 
 	if err == nil {
-		log.Print("INFO: Successfully terminated all sessions for " + email)
-		return true
+		log.Printf("INFO: Successfully terminated all sessions for %s", email)
+		return nil
 	}
 
-	if exitError, ok := err.(*exec.ExitError); ok {
-		if exitError.ExitCode() == 68 {
-			log.Print("INFO: No active sessions to terminate for " + email)
-			return true
-		}
+	exitErr, ok := err.(*exec.ExitError)
+	if ok && exitErr.ExitCode() == 68 {
+		log.Printf("INFO: No active sessions to terminate for %s", email)
+		return nil
 	}
 
-	log.Print("ERROR: Can't terminate sessions for " + email)
+	log.Printf("ERROR: Can't terminate sessions for %s", email)
 	log.Print(err)
-	return false
+	return err
 }
 
 //
@@ -570,7 +569,7 @@ func updatePassword(username, domain, newPass, oldPass string) error {
 	}
 
 	email := username + "@" + domain
-	if !reencryptMailbox(email, oldPass, newPass) {
+	if err = reencryptMailbox(email, oldPass, newPass); err != nil {
 		return errors.New("Internal error: Password not changed")
 	}
 
@@ -581,9 +580,9 @@ func updatePassword(username, domain, newPass, oldPass string) error {
 	}
 
 	log.Print("INFO: Password successfully changed for " + email)
-	terminateIMAPSessions(email)
+	err = terminateIMAPSessions(email)
 
-	return nil
+	return err
 }
 
 func main() {
