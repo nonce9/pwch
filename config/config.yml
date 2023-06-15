@@ -3,9 +3,6 @@ domain: example.com
 url_prefix: /selfservice
 assets_path: /usr/local/src/pwch
 
-wrapper:
-  path: /usr/local/bin  # no trailing slash!
-
 server:
   listen_address: 127.0.0.1
   port: 8080
