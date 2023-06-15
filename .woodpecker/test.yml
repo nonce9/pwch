@@ -1,4 +1,10 @@
 ---
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    settings:
+      home: /pwch
+
 pipeline:
   test_pwch:
     image: localhost/pwch-full:latest
