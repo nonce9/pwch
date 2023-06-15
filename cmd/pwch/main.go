@@ -340,7 +340,7 @@ func reencryptMailbox(email, oldPass, newPass string) error {
 	oldHashString := hex.EncodeToString(oldHash[:])
 	newHashString := hex.EncodeToString(newHash[:])
 
-	cmd := exec.Command(cfg.Wrapper.Path+"/doveadm_wrapper", "swap")
+	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "swap")
 
 	var input bytes.Buffer
 	input.WriteString(email + "\n" + oldHashString + "\n" + newHashString + "\n")
@@ -359,7 +359,7 @@ func reencryptMailbox(email, oldPass, newPass string) error {
 }
 
 func terminateIMAPSessions(email string) error {
-	cmd := exec.Command(cfg.Wrapper.Path+"/doveadm_wrapper", "kick")
+	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "kick")
 	err := cmd.Run()
 
 	if err == nil {

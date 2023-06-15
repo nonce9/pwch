@@ -161,7 +161,6 @@ func TestValidatePasswordFields(t *testing.T) {
 /*
 func TestUpdatePassword(t *testing.T) {
 
-	cfg.Wrapper.Path = "/pwch/cmd/doveadm_wrapper"
 	cfg.DB.Host = "/run/postgresql"
 	cfg.DB.DBName = "vmail"
 	cfg.DB.User = "vmail"
