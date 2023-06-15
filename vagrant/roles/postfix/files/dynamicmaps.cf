@@ -1,2 +1,0 @@
-# dict-type     so-name (pathname)      dict-function   mkmap-function
-pgsql   /usr/lib/postfix/postfix-pgsql.so             dict_pgsql_open

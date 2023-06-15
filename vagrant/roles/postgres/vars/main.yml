@@ -1,7 +1,0 @@
----
-postgres_packages:
-  - postgresql
-  - python3-psycopg2
-
-postgres_vmail_database: vmail
-postgres_vmail_user: vmail

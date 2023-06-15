@@ -1,5 +1,0 @@
----
-- name: Restart dovecot
-  ansible.builtin.systemd:
-    name: dovecot
-    state: restarted
