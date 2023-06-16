@@ -13,3 +13,5 @@ mua_sender_restrictions = permit_mynetworks,permit_sasl_authenticated,reject
 mua_client_restrictions = permit_mynetworks,permit_sasl_authenticated,reject
 
 virtual_transport = lmtp:unix:private/dovecot-lmtp
+
+maillog_file = /dev/stdout

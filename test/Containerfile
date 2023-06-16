@@ -21,9 +21,9 @@ COPY postgres/postgres.sql /root
 
 # prepare database
 RUN pg_ctlcluster 14/main start \
-    && sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;;" \
     && sudo -u postgres psql -c "CREATE USER vmail with password 'password';" \
     && sudo -u postgres psql -c "CREATE DATABASE vmail;" \
+    && sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" vmail \
     && sudo -u postgres psql vmail < /root/postgres.sql
 
 # configure postfix
