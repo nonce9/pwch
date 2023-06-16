@@ -212,7 +212,7 @@ func TestEmailSendHandler(t *testing.T) {
 	cfg.DB.Password = "password"
 	cfg.DB.SSLMode = "disable"
 
-	cfg.SMTP.Host = "pwch"
+	cfg.SMTP.Host = "localhost"
 	cfg.SMTP.Port = "587"
 	cfg.SMTP.LoginUser = "noreply@localdomain"
 	cfg.SMTP.LoginPassword = "password"
