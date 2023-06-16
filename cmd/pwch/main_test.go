@@ -53,6 +53,21 @@ func TestEnforcePasswordPolicy(t *testing.T) {
 	cfg.PasswordPolicy.Digits = true
 	cfg.PasswordPolicy.SepcialChar = true
 
+	testPassword := func(t testing.TB, password, expectedMessage string) {
+		t.Helper()
+
+		valid, message := enforcePasswordPolicy(password)
+
+		if valid {
+			t.Errorf("Expected invalid password for input '%s', but got valid", password)
+		}
+
+		if message != expectedMessage {
+			t.Errorf("Expected error message '%s', but got: %s", expectedMessage, message)
+		}
+
+	}
+
 	// Test case 1: Valid password that meets all requirements
 	password := "StrongPassword123!"
 	valid, message := enforcePasswordPolicy(password)
@@ -63,71 +78,47 @@ func TestEnforcePasswordPolicy(t *testing.T) {
 		t.Errorf("Expected success message for valid password, but got: %s", message)
 	}
 
-	// Test case 2: Password with insufficient length
-	password = "short"
-	valid, message = enforcePasswordPolicy(password)
-	if valid {
-		t.Errorf("Expected invalid password for input '%s', but got valid", password)
-	}
-	expectedMessage := fmt.Sprintf("Please enter at least a %d character long password", cfg.PasswordPolicy.MinLength)
-	if message != expectedMessage {
-		t.Errorf("Expected error message '%s' for password with insufficient length, but got: %s", expectedMessage, message)
-	}
+	// Test case 2
+	t.Run("password of insufficient length", func(t *testing.T) {
+		password = "short"
+		expectedMessage := fmt.Sprintf("Please enter at least a %d character long password", cfg.PasswordPolicy.MinLength)
+		testPassword(t, password, expectedMessage)
+	})
 
-	// Test case 3: Password exceeding maximum length
-	password = "thispasswordexceedsthemaximumallowedlength"
-	valid, message = enforcePasswordPolicy(password)
-	if valid {
-		t.Errorf("Expected invalid password for input '%s', but got valid", password)
-	}
-	expectedMessage = fmt.Sprintf("Please enter at max a %d character long password", cfg.PasswordPolicy.MaxLength)
-	if message != expectedMessage {
-		t.Errorf("Expected error message '%s' for password exceeding maximum length, but got: %s", expectedMessage, message)
-	}
+	// Test case 3
+	t.Run("password exceeding maximum length", func(t *testing.T) {
+		password = "thispasswordexceedsthemaximumallowedlength"
+		expectedMessage := fmt.Sprintf("Please enter at max a %d character long password", cfg.PasswordPolicy.MaxLength)
+		testPassword(t, password, expectedMessage)
+	})
 
-	// Test case 4: Password missing lower case character
-	password = "PASSWORD123!"
-	valid, message = enforcePasswordPolicy(password)
-	if valid {
-		t.Errorf("Expected invalid password for input '%s', but got valid", password)
-	}
-	expectedMessage = "Please enter at least one lower case character"
-	if message != expectedMessage {
-		t.Errorf("Expected error message '%s' for password missing lower case character, but got: %s", expectedMessage, message)
-	}
+	// Test case 4
+	t.Run("password missing lower case character", func(t *testing.T) {
+		password = "PASSWORD123!"
+		expectedMessage := "Please enter at least one lower case character"
+		testPassword(t, password, expectedMessage)
+	})
 
-	// Test case 5: Password missing upper case character
-	password = "password123!"
-	valid, message = enforcePasswordPolicy(password)
-	if valid {
-		t.Errorf("Expected invalid password for input '%s', but got valid", password)
-	}
-	expectedMessage = "Please enter at least one upper case character"
-	if message != expectedMessage {
-		t.Errorf("Expected error message '%s' for password missing upper case character, but got: %s", expectedMessage, message)
-	}
+	// Test case 5
+	t.Run("password missing upper case character", func(t *testing.T) {
+		password = "password123!"
+		expectedMessage := "Please enter at least one upper case character"
+		testPassword(t, password, expectedMessage)
+	})
 
-	// Test case 6: Password missing digit
-	password = "PasswordWithoutDigit!"
-	valid, message = enforcePasswordPolicy(password)
-	if valid {
-		t.Errorf("Expected invalid password for input '%s', but got valid", password)
-	}
-	expectedMessage = "Please enter at least one digit"
-	if message != expectedMessage {
-		t.Errorf("Expected error message '%s' for password missing digit, but got: %s", expectedMessage, message)
-	}
+	// Test case 6
+	t.Run("password missing digit", func(t *testing.T) {
+		password = "PasswordWithoutDigit!"
+		expectedMessage := "Please enter at least one digit"
+		testPassword(t, password, expectedMessage)
+	})
 
-	// Test case 7: Password missing special character
-	password = "PasswordNoSpecial123"
-	valid, message = enforcePasswordPolicy(password)
-	if valid {
-		t.Errorf("Expected invalid password for input '%s', but got valid", password)
-	}
-	expectedMessage = "Please enter at least one special character"
-	if message != expectedMessage {
-		t.Errorf("Expected error message '%s' for password missing special character, but got: %s", expectedMessage, message)
-	}
+	// Test case 7
+	t.Run("password missing special character", func(t *testing.T) {
+		password = "PasswordNoSpecial123"
+		expectedMessage := "Please enter at least one special character"
+		testPassword(t, password, expectedMessage)
+	})
 }
 
 func TestValidatePasswordFields(t *testing.T) {
