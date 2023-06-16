@@ -23,6 +23,7 @@ smtp:
   login_user: noreply@example.com
   login_password: noreply_password
   sender: PWCH <noreply@example.com
+  tls_verify: true
 
 password_policy:
   min_length: 12

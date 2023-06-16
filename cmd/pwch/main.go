@@ -73,6 +73,7 @@ type config struct {
 		LoginUser     string `yaml:"login_user"`
 		LoginPassword string `yaml:"login_password"`
 		Sender        string `yaml:"sender"`
+		TLSVerify     bool   `yaml:"tls_verify"`
 	} `yaml:"smtp"`
 	PasswordPolicy struct {
 		MinLength   int  `yaml:"min_length"`
@@ -236,6 +237,7 @@ func sendOneTimeLink(username, domain string, skipTLSVerification bool) error {
 
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: skipTLSVerification,
+		MinVersion:         tls.VersionTLS13,
 		ServerName:         host,
 	}
 
@@ -446,7 +448,7 @@ func emailSendHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, cfg.AssetsPath+"/emailSent.html")
 
 	if enabled, mailUser := emailEnabled(email); enabled {
-		err := sendOneTimeLink(mailUser.Username, mailUser.Domain, true)
+		err := sendOneTimeLink(mailUser.Username, mailUser.Domain, cfg.SMTP.TLSVerify)
 		if err != nil {
 			log.Print("ERROR: Sending OTL failed")
 			log.Print(err)

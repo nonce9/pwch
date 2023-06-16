@@ -217,6 +217,7 @@ func TestEmailSendHandler(t *testing.T) {
 	cfg.SMTP.LoginUser = "noreply@localdomain"
 	cfg.SMTP.LoginPassword = "password"
 	cfg.SMTP.Sender = "noreply@localdomain"
+	cfg.SMTP.TLSVerify = false
 
 	form := url.Values{}
 	form.Add("email", "pwch1@localdomain")
