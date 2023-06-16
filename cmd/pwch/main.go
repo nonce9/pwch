@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
-	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
@@ -204,16 +203,18 @@ func templatePasswordErrorPage(w http.ResponseWriter, errorMessage string) {
 	}
 }
 
-func sendOneTimeLink(username, domain string) error {
+func sendOneTimeLink(username, domain string) {
 	token, err := genRandomString(64)
 	if err != nil {
-		return err
+		log.Print(err)
+		log.Print("ERROR: cannot generate random string")
+		return
 	}
 
 	loginUser := cfg.SMTP.LoginUser
 	loginPassword := cfg.SMTP.LoginPassword
 	from := cfg.SMTP.Sender
-	to := username + "@" + domain
+	to := []string{username + "@" + domain}
 	host := cfg.SMTP.Host
 	port := cfg.SMTP.Port
 
@@ -234,59 +235,15 @@ func sendOneTimeLink(username, domain string) error {
 
 	auth := smtp.PlainAuth("", loginUser, loginPassword, host)
 
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: false,
-		MinVersion:         tls.VersionTLS13,
-		ServerName:         host,
-	}
-
-	conn, err := smtp.Dial(host + ":" + port)
+	err = smtp.SendMail(host+":"+port, auth, loginUser, to, message)
 	if err != nil {
-		return err
-	}
-
-	if err = conn.StartTLS(tlsConfig); err != nil {
-		conn.Close()
-		return err
-	}
-
-	if err = conn.Auth(auth); err != nil {
-		conn.Close()
-		return err
-	}
-
-	if err = conn.Mail(loginUser); err != nil {
-		conn.Close()
-		return err
-	}
-
-	if err = conn.Rcpt(to); err != nil {
-		conn.Close()
-		return err
-	}
-
-	w, err := conn.Data()
-	if err != nil {
-		conn.Close()
-		return err
-	}
-	defer w.Close()
-
-	_, err = w.Write(message)
-	if err != nil {
-		conn.Close()
-		return err
-	}
-
-	err = conn.Quit()
-	if err != nil && !strings.Contains(err.Error(), "250 2.0.0 Ok") {
-		return err
+		log.Print(err)
+		log.Print("ERROR: Sending OTL failed")
+		return
 	}
 
 	addToHashMap(oneTimeURLs.m, accessString, time.Now())
 	log.Print("INFO: Sent OTL to " + username + "@" + domain)
-
-	return nil
 }
 
 func connectToDatabase() *sql.DB {
@@ -447,12 +404,8 @@ func emailSendHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, cfg.AssetsPath+"/emailSent.html")
 
 	if enabled, mailUser := emailEnabled(email); enabled {
-		err := sendOneTimeLink(mailUser.Username, mailUser.Domain)
-		if err != nil {
-			log.Print("ERROR: Sending OTL failed")
-			log.Print(err)
-		}
 		lastEmailSent = time.Now()
+		go sendOneTimeLink(mailUser.Username, mailUser.Domain)
 	}
 }
 
