@@ -446,7 +446,3 @@ func TestPasswordSubmitHandler(t *testing.T) {
 	// restore log output to stdout
 	log.SetOutput(os.Stdout)
 }
-
-func TestMain(t *testing.T) {
-	configPath = "../../config/config.yml"
-}
