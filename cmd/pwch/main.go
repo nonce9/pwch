@@ -73,7 +73,6 @@ type config struct {
 		LoginUser     string `yaml:"login_user"`
 		LoginPassword string `yaml:"login_password"`
 		Sender        string `yaml:"sender"`
-		TLSVerify     bool   `yaml:"tls_verify"`
 	} `yaml:"smtp"`
 	PasswordPolicy struct {
 		MinLength   int  `yaml:"min_length"`
@@ -236,7 +235,7 @@ func sendOneTimeLink(username, domain string) error {
 	auth := smtp.PlainAuth("", loginUser, loginPassword, host)
 
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: cfg.SMTP.TLSVerify, //#nosec
+		InsecureSkipVerify: false,
 		MinVersion:         tls.VersionTLS13,
 		ServerName:         host,
 	}
