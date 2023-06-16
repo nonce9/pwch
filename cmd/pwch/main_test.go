@@ -194,50 +194,95 @@ func TestEmailSendHandler(t *testing.T) {
 	cfg.SMTP.LoginPassword = "password"
 	cfg.SMTP.Sender = "noreply@localdomain"
 
-	form := url.Values{}
-	form.Add("email", "pwch1@localdomain")
-	req, err := http.NewRequest("POST", "/emailSend", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	req.PostForm = form
-
-	// Create a response recorder to capture the response
-	rr := httptest.NewRecorder()
-
 	// Redirect log output to a buffer
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 
-	// Call the handler function
-	emailSendHandler(rr, req)
+	form := url.Values{}
 
-	// Check the response status code
-	if rr.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, but got %d", http.StatusOK, rr.Code)
+	checkEmailAddress := func(t testing.TB, expectedBody string, expectedCode int) {
+		t.Helper()
+
+		req, err := http.NewRequest("POST", "/emailSend", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.PostForm = form
+
+		// Create a response recorder to capture the response
+		rr := httptest.NewRecorder()
+
+		// Call the handler function
+		emailSendHandler(rr, req)
+
+		// Check the response status code
+		if rr.Code != expectedCode {
+			t.Errorf("Expected status code %d, but got %d", expectedCode, rr.Code)
+		}
+
+		// Check the response body
+		if !strings.Contains(rr.Body.String(), expectedBody) {
+			t.Errorf("handler returned unexpected body: %v not found", expectedBody)
+		}
 	}
 
-	expected := "<title>Password Reset</title>"
-	if !strings.Contains(rr.Body.String(), expected) {
-		t.Errorf("handler returned unexpected body: %v not found", expected)
-	}
+	// Test case 1
+	t.Run("test with valid email address", func(t *testing.T) {
+		form.Add("email", "pwch1@localdomain")
 
-	// wait for email being sent
-	time.Sleep(1000 * time.Millisecond)
+		checkEmailAddress(t, "an email may have been sent", http.StatusOK)
 
-	// Get the log output from the buffer
-	output := buf.String()
+		// wait for email being sent
+		time.Sleep(1000 * time.Millisecond)
 
-	// Remove the date and timestamp portion from the log messages
-	re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
-	cleanedOutput := re.ReplaceAllString(output, "")
+		// Get the log output from the buffer
+		output := buf.String()
 
-	expected = "INFO: pwch1@localdomain successfully validated\n" +
-		"INFO: Sent OTL to pwch1@localdomain\n"
+		// Remove the date and timestamp portion from the log messages
+		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
+		cleanedOutput := re.ReplaceAllString(output, "")
 
-	if cleanedOutput != expected {
-		t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
-	}
+		expected := "INFO: pwch1@localdomain successfully validated\n" +
+			"INFO: Sent OTL to pwch1@localdomain\n"
+
+		if cleanedOutput != expected {
+			t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
+		}
+	})
+
+	// Test case 2
+	// reset rate limiting
+	lastEmailSent = time.Now().Add(-10 * time.Minute)
+	form = url.Values{}
+	t.Run("test with invalid email address", func(t *testing.T) {
+		form.Add("email", "invalid@localdomain")
+
+		checkEmailAddress(t, "an email may have been sent", http.StatusOK)
+
+		// Get the log output from the buffer
+		output := buf.String()
+
+		// Remove the date and timestamp portion from the log messages
+		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
+		cleanedOutput := re.ReplaceAllString(output, "")
+
+		expected := "INFO: pwch1@localdomain successfully validated\n" +
+			"INFO: Sent OTL to pwch1@localdomain\n" +
+			"INFO: Unknown email address: invalid@localdomain\n"
+
+		if cleanedOutput != expected {
+			t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
+		}
+	})
+
+	// Test case 3
+	lastEmailSent = time.Now()
+	form = url.Values{}
+	t.Run("test rate limiting", func(t *testing.T) {
+		form.Add("email", "pwch1@localdomain")
+
+		checkEmailAddress(t, "Too early", http.StatusTooEarly)
+	})
 
 	// reset log ouput to stdout
 	log.SetOutput(os.Stdout)
