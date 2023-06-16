@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -236,6 +238,9 @@ func TestEmailSendHandler(t *testing.T) {
 	if cleanedOutput != expected {
 		t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
 	}
+
+	// reset log ouput to stdout
+	log.SetOutput(os.Stdout)
 }
 
 func TestPasswordChangeHandler(t *testing.T) {
@@ -266,7 +271,7 @@ func TestPasswordChangeHandler(t *testing.T) {
 		}
 	}
 
-	// Test case 1: valid URL
+	// Test case 1
 	t.Run("test with valid URL", func(t *testing.T) {
 		token, _ := genRandomString(64)
 		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
@@ -275,11 +280,124 @@ func TestPasswordChangeHandler(t *testing.T) {
 		getResetPage(t, url, "<title>Password Reset</title>")
 	})
 
-	// Test case 2: invalid/expired URL
+	// Test case 2
 	t.Run("test with invalid URL", func(t *testing.T) {
 		token, _ := genRandomString(64)
 		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
 
 		getResetPage(t, url, "Link expired")
 	})
+}
+
+func TestPasswordSubmitHandler(t *testing.T) {
+	// discard log output for this function
+	log.SetOutput(ioutil.Discard)
+
+	// set password policy
+	cfg.PasswordPolicy.MinLength = 6
+	cfg.PasswordPolicy.MaxLength = 24
+	cfg.PasswordPolicy.LowerCase = true
+	cfg.PasswordPolicy.UpperCase = true
+	cfg.PasswordPolicy.Digits = false
+	cfg.PasswordPolicy.SepcialChar = false
+
+	cfg.AssetsPath = "../../assets/html"
+
+	form := url.Values{}
+
+	getResultPage := func(t testing.TB, url, expectedBody string, expectedCode int) {
+		t.Helper()
+
+		req, err := http.NewRequest("POST", "/submitPassword/"+url, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.PostForm = form
+
+		rr := httptest.NewRecorder()
+
+		// Call the handler function
+		passwordSubmitHandler(rr, req)
+
+		// Check the response status code
+		if rr.Code != expectedCode {
+			t.Errorf("expected status code %d, got %d", expectedCode, rr.Code)
+		}
+
+		// Check the response body
+		if !strings.Contains(rr.Body.String(), expectedBody) {
+			t.Errorf("handler returned unexpected body: %v not found", expectedBody)
+		}
+	}
+
+	// Test case 1
+	t.Run("test full workflow", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+		addToHashMap(oneTimeURLs.m, url, time.Now())
+
+		form.Add("current-password", "password")
+		form.Add("new-password", "StrongPassword123!")
+		form.Add("confirm-password", "StrongPassword123!")
+
+		getResultPage(t, url, "Success", http.StatusOK)
+	})
+
+	// Test case 2
+	form = url.Values{}
+	t.Run("test redirect for expired link", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+
+		form.Add("current-password", "password")
+		form.Add("new-password", "StrongPassword123!")
+		form.Add("confirm-password", "StrongPassword123!")
+
+		getResultPage(t, url, "", http.StatusFound)
+	})
+
+	// Test case 3
+	form = url.Values{}
+	t.Run("test missmatching passwords", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+		addToHashMap(oneTimeURLs.m, url, time.Now())
+
+		form.Add("current-password", "password")
+		form.Add("new-password", "StrongPassword1234!")
+		form.Add("confirm-password", "StrongPassword123!")
+
+		getResultPage(t, url, "Passwords do not match", http.StatusOK)
+	})
+
+	// Test case 4
+	form = url.Values{}
+	t.Run("test setting the same password", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+		addToHashMap(oneTimeURLs.m, url, time.Now())
+
+		form.Add("current-password", "password")
+		form.Add("new-password", "password")
+		form.Add("confirm-password", "password")
+
+		getResultPage(t, url, "You are trying to set the same password again", http.StatusOK)
+	})
+
+	// Test case 5
+	form = url.Values{}
+	t.Run("test password policy violation", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+		addToHashMap(oneTimeURLs.m, url, time.Now())
+
+		form.Add("current-password", "password")
+		form.Add("new-password", "password123")
+		form.Add("confirm-password", "password123")
+
+		getResultPage(t, url, "Please enter at least one upper case character", http.StatusOK)
+	})
+
+	// restore log output to stdout
+	log.SetOutput(os.Stdout)
 }
