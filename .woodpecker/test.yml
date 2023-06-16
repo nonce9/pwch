@@ -3,7 +3,7 @@ clone:
   git:
     image: woodpeckerci/plugin-git
     settings:
-      home: /pwch
+      dir: /pwch
 
 pipeline:
   test_pwch:
