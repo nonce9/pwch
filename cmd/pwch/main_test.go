@@ -161,23 +161,6 @@ func TestValidatePasswordFields(t *testing.T) {
 	}
 }
 
-/*
-func TestUpdatePassword(t *testing.T) {
-
-	cfg.DB.Host = "/run/postgresql"
-	cfg.DB.DBName = "vmail"
-	cfg.DB.User = "vmail"
-	cfg.DB.Password = "password"
-	cfg.DB.SSLMode = "disable"
-
-	err := updatePassword("pwch1", "localdomain", "newPassword", "password")
-
-	if err != nil {
-		t.Errorf("Unexpected error: %v", err)
-	}
-}
-*/
-
 //
 // handler section
 //
@@ -262,4 +245,50 @@ func TestEmailSendHandler(t *testing.T) {
 	if cleanedOutput != expected {
 		t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
 	}
+}
+
+func TestPasswordChangeHandler(t *testing.T) {
+	cfg.AssetsPath = "../../assets/html"
+
+	getResetPage := func(t testing.TB, url, expected string) {
+		t.Helper()
+
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+
+		// Call the handler function
+		passwordChangeHandler(rr, req)
+
+		// Check the response status code
+		if rr.Code != http.StatusOK {
+			t.Errorf("expected status code %d, got %d", http.StatusOK, rr.Code)
+		}
+
+		// Check the response body
+		expectedBody := expected
+		if !strings.Contains(rr.Body.String(), expectedBody) {
+			t.Errorf("handler returned unexpected body: %v not found", expectedBody)
+		}
+	}
+
+	// Test case 1: valid URL
+	t.Run("test with valid URL", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+		addToHashMap(oneTimeURLs.m, url, time.Now())
+
+		getResetPage(t, url, "<title>Password Reset</title>")
+	})
+
+	// Test case 2: invalid/expired URL
+	t.Run("test with invalid URL", func(t *testing.T) {
+		token, _ := genRandomString(64)
+		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
+
+		getResetPage(t, url, "Link expired")
+	})
 }
