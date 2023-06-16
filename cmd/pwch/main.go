@@ -205,7 +205,7 @@ func templatePasswordErrorPage(w http.ResponseWriter, errorMessage string) {
 	}
 }
 
-func sendOneTimeLink(username, domain string, skipTLSVerification bool) error {
+func sendOneTimeLink(username, domain string) error {
 	token, err := genRandomString(64)
 	if err != nil {
 		return err
@@ -236,7 +236,7 @@ func sendOneTimeLink(username, domain string, skipTLSVerification bool) error {
 	auth := smtp.PlainAuth("", loginUser, loginPassword, host)
 
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: skipTLSVerification,
+		InsecureSkipVerify: cfg.SMTP.TLSVerify,
 		MinVersion:         tls.VersionTLS13,
 		ServerName:         host,
 	}
@@ -448,7 +448,7 @@ func emailSendHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, cfg.AssetsPath+"/emailSent.html")
 
 	if enabled, mailUser := emailEnabled(email); enabled {
-		err := sendOneTimeLink(mailUser.Username, mailUser.Domain, cfg.SMTP.TLSVerify)
+		err := sendOneTimeLink(mailUser.Username, mailUser.Domain)
 		if err != nil {
 			log.Print("ERROR: Sending OTL failed")
 			log.Print(err)
