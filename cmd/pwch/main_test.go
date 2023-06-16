@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -209,6 +212,12 @@ func TestEmailSendHandler(t *testing.T) {
 	cfg.DB.Password = "password"
 	cfg.DB.SSLMode = "disable"
 
+	cfg.SMTP.Host = "pwch"
+	cfg.SMTP.Port = "587"
+	cfg.SMTP.LoginUser = "noreply@localdomain"
+	cfg.SMTP.LoginPassword = "password"
+	cfg.SMTP.Sender = "noreply@localdomain"
+
 	form := url.Values{}
 	form.Add("email", "pwch1@localdomain")
 	req, err := http.NewRequest("POST", "/emailSend", nil)
@@ -219,6 +228,10 @@ func TestEmailSendHandler(t *testing.T) {
 
 	// Create a response recorder to capture the response
 	rr := httptest.NewRecorder()
+
+	// Redirect log output to a buffer
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
 
 	// Call the handler function
 	emailSendHandler(rr, req)
@@ -231,5 +244,22 @@ func TestEmailSendHandler(t *testing.T) {
 	expected := "<title>Password Reset</title>"
 	if !strings.Contains(rr.Body.String(), expected) {
 		t.Errorf("handler returned unexpected body: %v not found", expected)
+	}
+
+	// wait for email being sent
+	time.Sleep(1000 * time.Millisecond)
+
+	// Get the log output from the buffer
+	output := buf.String()
+
+	// Remove the date and timestamp portion from the log messages
+	re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
+	cleanedOutput := re.ReplaceAllString(output, "")
+
+	expected = "INFO: pwch1@localdomain successfully validated\n" +
+		"INFO: Sent OTL to pwch1@localdomain\n"
+
+	if cleanedOutput != expected {
+		t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
 	}
 }
