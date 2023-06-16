@@ -1,10 +1,4 @@
 ---
-clone:
-  git:
-    image: woodpeckerci/plugin-git
-    settings:
-      dir: /pwch
-
 pipeline:
   test_pwch:
     image: localhost/pwch-full:latest
@@ -12,6 +6,8 @@ pipeline:
       - /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
       - cd cmd/doveadm_wrapper
       - go build
+      - mkdir -p /pwch/cmd/doveadm_wrapper
+      - mv doveadm_wrapper /pwch/cmd/doveadm_wrapper
       - cd ../pwch
       - go install github.com/mattn/goveralls@latest
       - /root/go/bin/goveralls -v -service drone.io
