@@ -26,10 +26,20 @@ RUN pg_ctlcluster 14/main start \
     && sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" vmail \
     && sudo -u postgres psql vmail < /root/postgres.sql
 
+# generate certificate
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+    -keyout /etc/ssl/localhost.key -out /etc/ssl/localhost.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=localhost" \
+    -addext "subjectAltName = DNS:localhost" \
+    && cp /etc/ssl/localhost.crt /usr/local/share/ca-certificates/localhost.crt \
+    && update-ca-certificates
+
 # configure postfix
 COPY postfix/main.cf /root/main.cf
 
 RUN cat /root/main.cf >> /etc/postfix/main.cf \
+    && sed -i 's/smtpd_tls_cert_file=.*/smtpd_tls_cert_file=\/etc\/ssl\/localhost.crt/' /etc/postfix/main.cf \
+    && sed -i 's/smtpd_tls_key_file=.*/smtpd_tls_key_file=\/etc\/ssl\/localhost.key/' /etc/postfix/main.cf \
     && mkdir /etc/postfix/sql
 
 COPY postfix/master.cf /etc/postfix
