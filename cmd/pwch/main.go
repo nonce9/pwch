@@ -356,7 +356,7 @@ func reencryptMailbox(email, oldPass, newPass string) error {
 }
 
 func terminateIMAPSessions(email string) error {
-	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "kick")
+	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "kick", email)
 	err := cmd.Run()
 
 	if err == nil {
@@ -364,8 +364,7 @@ func terminateIMAPSessions(email string) error {
 		return nil
 	}
 
-	exitErr, ok := err.(*exec.ExitError)
-	if ok && exitErr.ExitCode() == 68 {
+	if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 68 {
 		log.Printf("INFO: No active sessions to terminate for %s", email)
 		return nil
 	}
@@ -471,7 +470,7 @@ func passwordSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := updatePassword(username, domain, newPass, oldPass); err != nil {
-		templatePasswordErrorPage(w, "Internal error: Password not changed")
+		templatePasswordErrorPage(w, err.Error())
 		return
 	}
 
