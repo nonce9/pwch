@@ -208,15 +208,56 @@ select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
 
 -----
 
-## Integration testing
+## How to test
 
-Integration testing has to be done locally with vagrant and ansible.
-After installing these dependencies on your machine you have to build the pwch
-binaries and move them to the correct directories in order to deploy them with
-ansible on your vagrant box.
+Due to the external dependencies unit tests must be executed in a prepared environment.
+I decided against mocking the dependencies as this would mean pulling in several
+additional Go dependencies and writing a whole bunch of additional test code.
 
-A simple `go build` in the `cmd/` directories should yield a `pwch` and a
-`doveadm_wrapper` binary. Place these binaries in `vagrant/roles/pwch/files/`.
+Instead I wrote an arguably disgusting all-in-one container image that is meant to be
+used to run unit tests. However, this container functions as continuous integration test
+as well. 
 
-Then simply run `vagrant up` inside the `vagrant/` directory. If the ansible
-playbook does not start automatically, run `vagrant provision`.
+Here's how to run tests:
+
+__INFO__: All listed commands are expected to be run from the repo's root directory.
+
+1. Build the doveadm_wrapper binary
+```
+cd cmd/doveadm_wrapper
+go build
+```
+
+2. Build the container image
+```
+cd test
+docker build -t pwch-test .
+```
+
+3. Run the container in detached mode
+```
+docker run -d -v ${PWD}:/pwch --name pwch-test pwch-test
+```
+Or if you're running on SELinux:
+```
+docker run -d -v ${PWD}:/pwch:Z --name pwch-test pwch-test
+```
+
+4. Enter the container, navigate to the test file and run the tests
+```
+docker exec -it pwch-test /bin/bash
+cd pwch/cmd/pwch
+go test -v
+```
+
+That's it!
+
+Remove the container when you're done:
+```
+docker stop pwch-test
+docker rm pwch-test
+```
+
+## License
+
+AGPL-3.0
