@@ -107,14 +107,19 @@ type mailUser struct {
 
 // data object for html template
 type changePasswordTemplateData struct {
-	Token    string
-	Username string
-	Domain   string
-	Length   int
-	Lower    bool
-	Upper    bool
-	Digit    bool
-	Special  bool
+	URLPrefix string
+	Token     string
+	Username  string
+	Domain    string
+	Length    int
+	Lower     bool
+	Upper     bool
+	Digit     bool
+	Special   bool
+}
+
+type submitEmailTemplateData struct {
+	URLPrefix string
 }
 
 func printBuildInfo() {
@@ -379,7 +384,20 @@ func terminateIMAPSessions(email string) error {
 //
 
 func submitEmailHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, cfg.AssetsPath+"/submitEmail.html")
+	data := submitEmailTemplateData{
+		URLPrefix: cfg.URLPrefix,
+	}
+
+	tmpl, err := template.ParseFiles(cfg.AssetsPath + "/submitEmail.html")
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	if err := tmpl.Execute(w, data); err != nil {
+		log.Print(err)
+		log.Print("ERROR: cannot execute template")
+	}
 }
 
 func emailSendHandler(w http.ResponseWriter, r *http.Request) {
@@ -421,14 +439,15 @@ func passwordChangeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := changePasswordTemplateData{
-		Token:    token,
-		Username: username,
-		Domain:   domain,
-		Length:   cfg.PasswordPolicy.MinLength,
-		Lower:    cfg.PasswordPolicy.LowerCase,
-		Upper:    cfg.PasswordPolicy.UpperCase,
-		Digit:    cfg.PasswordPolicy.Digits,
-		Special:  cfg.PasswordPolicy.SepcialChar,
+		URLPrefix: cfg.URLPrefix,
+		Token:     token,
+		Username:  username,
+		Domain:    domain,
+		Length:    cfg.PasswordPolicy.MinLength,
+		Lower:     cfg.PasswordPolicy.LowerCase,
+		Upper:     cfg.PasswordPolicy.UpperCase,
+		Digit:     cfg.PasswordPolicy.Digits,
+		Special:   cfg.PasswordPolicy.SepcialChar,
 	}
 
 	tmpl, err := template.ParseFiles(cfg.AssetsPath + "/changePassword.html")

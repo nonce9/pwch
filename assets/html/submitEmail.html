@@ -22,7 +22,7 @@
               <path d="m50 75 75 55 75-55" stroke-linecap="round" stroke-width="3.75"/>
             </g>
           </svg>
-          <form action="/selfservice/emailSend" method="POST">
+          <form action="{{ .URLPrefix }}/emailSend" method="POST">
             <input class="form-element input-field" name="email" type="email" placeholder="Enter your email">
             <input class="form-element submit-button" type="submit" value="Submit">
           </form>
