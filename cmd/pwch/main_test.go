@@ -284,7 +284,7 @@ func TestEmailSendHandler(t *testing.T) {
 		checkEmailAddress(t, "Too early", http.StatusTooEarly)
 	})
 
-	// reset log ouput to stdout
+	// reset log output to stdout
 	log.SetOutput(os.Stdout)
 }
 
