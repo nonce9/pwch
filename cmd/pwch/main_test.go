@@ -521,7 +521,7 @@ func TestEmailSendHandler(t *testing.T) {
 	}
 
 	// Test case 1
-	t.Run("test with valid email address", func(t *testing.T) {
+	t.Run("test valid email address", func(t *testing.T) {
 		form.Add("email", "pwch1@localdomain")
 
 		logOutput := checkEmailAddress(t, "an email may have been sent", "POST", http.StatusOK, true)
@@ -538,7 +538,7 @@ func TestEmailSendHandler(t *testing.T) {
 	// reset rate limiting
 	lastEmailSent = time.Now().Add(-10 * time.Minute)
 	form = url.Values{}
-	t.Run("test with invalid email address", func(t *testing.T) {
+	t.Run("test invalid email address", func(t *testing.T) {
 		form.Add("email", "invalid@localdomain")
 
 		logOutput := checkEmailAddress(t, "an email may have been sent", "POST", http.StatusOK, false)
@@ -562,6 +562,14 @@ func TestEmailSendHandler(t *testing.T) {
 	// Test case 4
 	t.Run("test wrong method", func(t *testing.T) {
 		_ = checkEmailAddress(t, "Method not allowed", "GET", http.StatusMethodNotAllowed, false)
+	})
+
+	form = url.Values{}
+	// Test case 5
+	t.Run("test wrong email syntax", func(t *testing.T) {
+		form.Add("email", "pwch1localdomain")
+
+		_ = checkEmailAddress(t, "Please enter a valid email address", "POST", http.StatusOK, false)
 	})
 }
 
