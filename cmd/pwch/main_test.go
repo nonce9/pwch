@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,6 +17,13 @@ import (
 	"testing"
 	"time"
 )
+
+// custom error reader
+type errorReader struct{}
+
+func (r errorReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("custom error")
+}
 
 func TestPrintBuildInfo(t *testing.T) {
 	// Create a pipe to capture standard output
@@ -143,6 +152,45 @@ func TestAddToHashMap(t *testing.T) {
 	if val, ok := m[key]; !ok || val != value {
 		t.Errorf("Expected key-value pair '%s:%v' to be added to the map, but it is not present or the value is incorrect", key, value)
 	}
+}
+
+func TestGenRandomBytes(t *testing.T) {
+	t.Run("unexpected length", func(t *testing.T) {
+		length := 10
+		randomBytes, err := genRandomBytes(length)
+
+		if err != nil {
+			t.Errorf("Error generating random bytes: %v", err)
+		}
+		if len(randomBytes) != length {
+			t.Errorf("Unexpected length of random bytes.\nExpected: %d\nGot: %d", length, len(randomBytes))
+		}
+
+	})
+
+	t.Run("unexpected error", func(t *testing.T) {
+		// Replace the default rand.Reader with the errorReader
+		originalReader := rand.Reader
+		rand.Reader = errorReader{}
+
+		randomBytes, err := genRandomBytes(10)
+
+		// Restore the original rand.Reader
+		rand.Reader = originalReader
+
+		if err == nil {
+			t.Error("Expected error, but got nil")
+		} else {
+			expectedError := "custom error"
+			if err.Error() != expectedError {
+				t.Errorf("Unexpected error.\nExpected: %s\nGot: %s", expectedError, err.Error())
+			}
+		}
+
+		if randomBytes != nil {
+			t.Errorf("Expected nil byte slice, but got: %v", randomBytes)
+		}
+	})
 }
 
 func TestIsValidEmail(t *testing.T) {
