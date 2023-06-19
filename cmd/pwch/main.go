@@ -342,7 +342,7 @@ func reencryptMailbox(email, oldPass, newPass string) error {
 	cmd := exec.Command("/usr/local/bin/doveadm_wrapper", "swap")
 
 	var input bytes.Buffer
-	input.WriteString(email + "\n" + oldHashString + "\n" + newHashString + "\n")
+	input.WriteString(email + "\n" + oldHashString + "\n" + newHashString + "\n" + newHashString + "\n")
 
 	cmd.Stdin = &input
 
