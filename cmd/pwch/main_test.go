@@ -15,6 +15,25 @@ import (
 	"time"
 )
 
+func TestReadFile(t *testing.T) {
+	cfg := &config{}
+	configPath = "config.yml"
+
+	err := readFile(cfg)
+
+	if err.Error() != "open config.yml: no such file or directory" {
+		t.Errorf("Unexpected error occurred: %v", err)
+	}
+
+	configPath = "../../config/config.yml"
+	err = readFile(cfg)
+
+	expectedDomain := "example.com"
+	if cfg.Domain != expectedDomain {
+		t.Errorf("Expected Domain: %s, Got: %s", expectedDomain, cfg.Domain)
+	}
+}
+
 func TestDeleteFromHashMap(t *testing.T) {
 	m := oneTimeURLs.m
 	key := "test_key"
