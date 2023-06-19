@@ -152,17 +152,18 @@ func printHelp() {
 }
 
 // reads config file
-func readFile(cfg *config) {
+func readFile(cfg *config) error {
 	file, err := os.Open(configPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(cfg)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 func deleteFromHashMap(m map[string]time.Time, key string) {
@@ -620,7 +621,10 @@ func main() {
 		}
 	}
 
-	readFile(&cfg)
+	err := readFile(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	lastEmailSent = time.Now()
 
