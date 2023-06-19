@@ -118,10 +118,10 @@ func main() {
 				os.Exit(1)
 			}
 
-			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-U") //#nosec
+			cmd := exec.Command("/bin/doveadm", "mailbox", "cryptokey", "password", "-u", email, "-O", "-N") //#nosec
 
 			var input bytes.Buffer
-			input.Write([]byte(oldHashString + "\n" + newHashString + "\n"))
+			input.Write([]byte(oldHashString + "\n" + newHashString + "\n" + newHashString + "\n"))
 
 			cmd.Stdin = &input
 
