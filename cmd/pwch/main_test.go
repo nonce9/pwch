@@ -209,6 +209,49 @@ func TestIsValidEmail(t *testing.T) {
 	}
 }
 
+func TestSendOneTimeLink(t *testing.T) {
+	testSMTP := func(t testing.TB, username, domain string) string {
+		t.Helper()
+
+		var buf bytes.Buffer
+		log.SetOutput(&buf)
+
+		sendOneTimeLink(username, domain)
+
+		// Get the log output from the buffer
+		output := buf.String()
+
+		// Remove the date and timestamp portion from the log messages
+		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
+		cleanedOutput := re.ReplaceAllString(output, "")
+
+		log.SetOutput(os.Stdout)
+		return cleanedOutput
+	}
+
+	// Test case 1
+	t.Run("test successful delivery", func(t *testing.T) {
+		got := testSMTP(t, "pwch1", "localdomain")
+		want := "dial tcp :0: connect: connection refused\n" +
+			"ERROR: Sending OTL failed\n"
+
+		if got != want {
+			t.Errorf("\nGot:\n%s\nWant:\n%s", got, want)
+		}
+	})
+
+	// Test case 2
+	t.Run("test failed delivery", func(t *testing.T) {
+		got := testSMTP(t, "test", "127.0.0.1")
+		want := "dial tcp :0: connect: connection refused\n" +
+			"ERROR: Sending OTL failed\n"
+
+		if got != want {
+			t.Errorf("\nGot:\n%s\nWant:\n%s", got, want)
+		}
+	})
+}
+
 func TestEnforcePasswordPolicy(t *testing.T) {
 
 	cfg.PasswordPolicy.MinLength = 12
