@@ -360,6 +360,79 @@ func TestValidatePasswordFields(t *testing.T) {
 	}
 }
 
+func TestReencryptMailbox(t *testing.T) {
+	testReencryption := func(t testing.TB, username, oldPassword, newPassword string) (error, string) {
+		t.Helper()
+
+		var buf bytes.Buffer
+		log.SetOutput(&buf)
+
+		err := reencryptMailbox(username, oldPassword, newPassword)
+
+		// Get the log output from the buffer
+		output := buf.String()
+
+		// Remove the date and timestamp portion from the log messages
+		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
+		cleanedOutput := re.ReplaceAllString(output, "")
+
+		log.SetOutput(os.Stdout)
+		return err, cleanedOutput
+	}
+
+	// Test case 1
+	t.Run("successful reencryption", func(t *testing.T) {
+		err, logMessage := testReencryption(t, "pwch2@localdomain", "password", "StrongPassword1234!")
+
+		if err != nil {
+			t.Errorf("want nil but got %v", err)
+		}
+
+		if !strings.Contains(logMessage, "Successfully") {
+			t.Errorf("got unexpected log message: %s", logMessage)
+		}
+	})
+
+	// Test case 2
+	t.Run("failed reencryption of same user again", func(t *testing.T) {
+		err, logMessage := testReencryption(t, "pwch2@localdomain", "password", "StrongPassword1234!")
+
+		if err == nil {
+			t.Errorf("want error but got nil")
+		}
+
+		if !strings.Contains(logMessage, "exit status 65") {
+			t.Errorf("got unexpected log message: %s", logMessage)
+		}
+	})
+
+	// Test case 3
+	t.Run("failed reencryption of another user", func(t *testing.T) {
+		err, logMessage := testReencryption(t, "pwch3@localdomain", "password123", "StrongPassword1234!")
+
+		if err == nil {
+			t.Errorf("want error but got nil")
+		}
+
+		if !strings.Contains(logMessage, "exit status 65") {
+			t.Errorf("got unexpected log message: %s", logMessage)
+		}
+	})
+
+	// Test case 4
+	t.Run("non existing user", func(t *testing.T) {
+		err, logMessage := testReencryption(t, "test@localdomain", "password", "StrongPassword1234!")
+
+		if err == nil {
+			t.Errorf("want error but got nil")
+		}
+
+		if !strings.Contains(logMessage, "exit status 67") {
+			t.Errorf("got unexpected log message: %s", logMessage)
+		}
+	})
+}
+
 //
 // handler section
 //
@@ -600,9 +673,9 @@ func TestPasswordSubmitHandler(t *testing.T) {
 		token, _ := genRandomString(64)
 		url := "changePassword?token=" + token + "&username=pwch1&domain=localdomain"
 
-		form.Add("current-password", "password")
-		form.Add("new-password", "StrongPassword123!")
-		form.Add("confirm-password", "StrongPassword123!")
+		form.Add("current-password", "StrongPassword1234!")
+		form.Add("new-password", "StrongPassword123!+")
+		form.Add("confirm-password", "StrongPassword123!+")
 
 		getResultPage(t, url, "", http.StatusFound)
 	})
