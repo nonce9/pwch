@@ -118,7 +118,7 @@ mail_plugins = mail_crypt
 
 plugin {
     mail_crypt_curve = secp521r1
-    mail_crypt_require_encrypted_user_key = yes
+    mail_crypt_require_encrypted_user_key = true
     mail_crypt_save_version = 2
 }
 ```
