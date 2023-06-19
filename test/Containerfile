@@ -1,4 +1,4 @@
-FROM docker.io/ubuntu:latest
+FROM docker.io/debian:latest
 
 # install dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -15,12 +15,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && apt-get clean
 
 # copy postgres config files and database sql script
-COPY postgres/postgres.conf /etc/postgresql/14/main/conf.d/custom.conf
-COPY postgres/pg_hba.conf /etc/postgresql/14/main
+COPY postgres/postgres.conf /etc/postgresql/15/main/conf.d/custom.conf
+COPY postgres/pg_hba.conf /etc/postgresql/15/main
 COPY postgres/postgres.sql /root
 
 # prepare database
-RUN pg_ctlcluster 14/main start \
+RUN pg_ctlcluster 15/main start \
     && sudo -u postgres psql -c "CREATE USER vmail with password 'password';" \
     && sudo -u postgres psql -c "CREATE DATABASE vmail;" \
     && sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" vmail \
@@ -62,11 +62,11 @@ COPY --chown=root:dovecot --chmod=0440 dovecot/dovecot-sql.conf /etc/dovecot
 # encrypt mailboxes
 ARG PASSWORD=e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716
 
-RUN pg_ctlcluster 14/main start \
-&& /usr/sbin/dovecot -c /etc/dovecot/dovecot.conf \
-&& doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch1@localdomain -U \
-&& doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
-&& doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
+RUN pg_ctlcluster 15/main start \
+    && /usr/sbin/dovecot -c /etc/dovecot/dovecot.conf \
+    && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch1@localdomain -U \
+    && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
+    && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
 
 # symlink doveadm_wrapper
 RUN mkdir /pwch \
