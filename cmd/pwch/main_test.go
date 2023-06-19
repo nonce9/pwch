@@ -473,26 +473,36 @@ func TestEmailSendHandler(t *testing.T) {
 	cfg.SMTP.LoginPassword = "password"
 	cfg.SMTP.Sender = "noreply@localdomain"
 
-	// Redirect log output to a buffer
-	var buf bytes.Buffer
-	log.SetOutput(&buf)
-
 	form := url.Values{}
 
-	checkEmailAddress := func(t testing.TB, expectedBody string, expectedCode int) {
+	checkEmailAddress := func(t testing.TB, expectedBody, method string, expectedCode int, pause bool) string {
 		t.Helper()
 
-		req, err := http.NewRequest("POST", "/emailSend", nil)
+		// Redirect log output to a buffer
+		var buf bytes.Buffer
+		log.SetOutput(&buf)
+
+		req, err := http.NewRequest(method, "/emailSend", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
-		req.PostForm = form
 
-		// Create a response recorder to capture the response
+		if method == "POST" {
+			req.PostForm = form
+		}
+
 		rr := httptest.NewRecorder()
 
-		// Call the handler function
 		emailSendHandler(rr, req)
+
+		if pause {
+			time.Sleep(500 * time.Millisecond)
+		}
+		output := buf.String()
+
+		// Remove the date and timestamp portion from the log messages
+		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
+		cleanedOutput := re.ReplaceAllString(output, "")
 
 		// Check the response status code
 		if rr.Code != expectedCode {
@@ -503,29 +513,24 @@ func TestEmailSendHandler(t *testing.T) {
 		if !strings.Contains(rr.Body.String(), expectedBody) {
 			t.Errorf("handler returned unexpected body: %v not found", expectedBody)
 		}
+
+		// reset log output to stdout
+		log.SetOutput(os.Stdout)
+
+		return cleanedOutput
 	}
 
 	// Test case 1
 	t.Run("test with valid email address", func(t *testing.T) {
 		form.Add("email", "pwch1@localdomain")
 
-		checkEmailAddress(t, "an email may have been sent", http.StatusOK)
-
-		// wait for email being sent
-		time.Sleep(1000 * time.Millisecond)
-
-		// Get the log output from the buffer
-		output := buf.String()
-
-		// Remove the date and timestamp portion from the log messages
-		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
-		cleanedOutput := re.ReplaceAllString(output, "")
+		logOutput := checkEmailAddress(t, "an email may have been sent", "POST", http.StatusOK, true)
 
 		expected := "INFO: pwch1@localdomain successfully validated\n" +
 			"INFO: Sent OTL to pwch1@localdomain\n"
 
-		if cleanedOutput != expected {
-			t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
+		if logOutput != expected {
+			t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, logOutput)
 		}
 	})
 
@@ -536,21 +541,12 @@ func TestEmailSendHandler(t *testing.T) {
 	t.Run("test with invalid email address", func(t *testing.T) {
 		form.Add("email", "invalid@localdomain")
 
-		checkEmailAddress(t, "an email may have been sent", http.StatusOK)
+		logOutput := checkEmailAddress(t, "an email may have been sent", "POST", http.StatusOK, false)
 
-		// Get the log output from the buffer
-		output := buf.String()
+		expected := "INFO: Unknown email address: invalid@localdomain\n"
 
-		// Remove the date and timestamp portion from the log messages
-		re := regexp.MustCompile(`\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} `)
-		cleanedOutput := re.ReplaceAllString(output, "")
-
-		expected := "INFO: pwch1@localdomain successfully validated\n" +
-			"INFO: Sent OTL to pwch1@localdomain\n" +
-			"INFO: Unknown email address: invalid@localdomain\n"
-
-		if cleanedOutput != expected {
-			t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, cleanedOutput)
+		if logOutput != expected {
+			t.Errorf("Unexpected log output.\nExpected: %s\nActual: %s", expected, logOutput)
 		}
 	})
 
@@ -560,11 +556,13 @@ func TestEmailSendHandler(t *testing.T) {
 	t.Run("test rate limiting", func(t *testing.T) {
 		form.Add("email", "pwch1@localdomain")
 
-		checkEmailAddress(t, "Too early", http.StatusTooEarly)
+		_ = checkEmailAddress(t, "Too early", "POST", http.StatusTooEarly, false)
 	})
 
-	// reset log output to stdout
-	log.SetOutput(os.Stdout)
+	// Test case 4
+	t.Run("test wrong method", func(t *testing.T) {
+		_ = checkEmailAddress(t, "Method not allowed", "GET", http.StatusMethodNotAllowed, false)
+	})
 }
 
 func TestPasswordChangeHandler(t *testing.T) {
