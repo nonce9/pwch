@@ -311,7 +311,7 @@ func checkPasswordHash(password string, hash string) bool {
 	return true
 }
 
-func passwordMatches(username string, domain string, oldPass string, newPass string) bool {
+func passwordMatches(username string, domain string, oldPass string) bool {
 	var db = connectToDatabase()
 
 	var hash string
@@ -556,6 +556,10 @@ func enforcePasswordPolicy(password string) (bool, string) {
 
 // updates password in database, reencrypts mailbox and terminates IMAP sessions
 func updatePassword(username, domain, newPass, oldPass string) error {
+	if !passwordMatches(username, domain, oldPass) {
+		return errors.New("Current Password does not match")
+	}
+
 	hash, err := hashPassword(newPass)
 	if err != nil {
 		log.Print(err)
