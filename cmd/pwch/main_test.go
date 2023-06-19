@@ -145,6 +145,22 @@ func TestAddToHashMap(t *testing.T) {
 	}
 }
 
+func TestIsValidEmail(t *testing.T) {
+	// Test case 1
+	email := "test@example.com"
+	result := isValidEmail(email)
+	if result == false {
+		t.Errorf("Got %s is invail but should be vaild", email)
+	}
+
+	// Test case 2
+	email = "testexample.com"
+	result = isValidEmail(email)
+	if result == true {
+		t.Errorf("Got %s is vail but should be invaild", email)
+	}
+}
+
 func TestEnforcePasswordPolicy(t *testing.T) {
 
 	cfg.PasswordPolicy.MinLength = 12
