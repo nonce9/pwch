@@ -17,21 +17,45 @@ import (
 
 func TestReadFile(t *testing.T) {
 	cfg := &config{}
-	configPath = "config.yml"
 
-	err := readFile(cfg)
-
-	if err.Error() != "open config.yml: no such file or directory" {
-		t.Errorf("Unexpected error occurred: %v", err)
+	loadConfig := func(t testing.TB, path string) error {
+		t.Helper()
+		configPath = path
+		return readFile(cfg)
 	}
 
-	configPath = "../../config/config.yml"
-	err = readFile(cfg)
+	// Test case 1
+	t.Run("test non existing config file", func(t *testing.T) {
+		err := loadConfig(t, "config.yml")
 
-	expectedDomain := "example.com"
-	if cfg.Domain != expectedDomain {
-		t.Errorf("Expected Domain: %s, Got: %s", expectedDomain, cfg.Domain)
-	}
+		if err.Error() != "open config.yml: no such file or directory" {
+			t.Errorf("Unexpected error occurred: %v", err)
+		}
+
+	})
+
+	// Test case 2
+	t.Run("test unmarshal error", func(t *testing.T) {
+		err := loadConfig(t, "../../config/pwch.service")
+
+		if !strings.Contains(err.Error(), "yaml: unmarshal errors") {
+			t.Errorf("Unexpected error occurred: %v", err)
+		}
+	})
+
+	// Test case 3
+	t.Run("test successfull case", func(t *testing.T) {
+		err := loadConfig(t, "../../config/config.yml")
+
+		if err != nil {
+			t.Errorf("Expected error to be nil, but got: %v", err)
+		}
+
+		expectedDomain := "example.com"
+		if cfg.Domain != expectedDomain {
+			t.Errorf("Expected Domain: %s, Got: %s", expectedDomain, cfg.Domain)
+		}
+	})
 }
 
 func TestDeleteFromHashMap(t *testing.T) {
