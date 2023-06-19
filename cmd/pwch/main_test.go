@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +15,61 @@ import (
 	"testing"
 	"time"
 )
+
+func TestPrintBuildInfo(t *testing.T) {
+	// Create a pipe to capture standard output
+	readPipe, writePipe, _ := os.Pipe()
+	defer readPipe.Close()
+
+	// Redirect standard output to the write end of the pipe
+	oldStdout := os.Stdout
+	os.Stdout = writePipe
+
+	printBuildInfo()
+
+	// Restore standard output
+	os.Stdout = oldStdout
+	writePipe.Close()
+
+	// Read the captured output from the read end of the pipe
+	var outputBytes []byte
+	outputBytes, _ = io.ReadAll(readPipe)
+	output := string(outputBytes)
+
+	if !strings.Contains(output, "pwch version:") {
+		t.Errorf("Unexpected help message.\nGot:\n%s", output)
+	}
+}
+
+func TestPrintHelp(t *testing.T) {
+	// Create a pipe to capture standard output
+	readPipe, writePipe, _ := os.Pipe()
+	defer readPipe.Close()
+
+	// Redirect standard output to the write end of the pipe
+	oldStdout := os.Stdout
+	os.Stdout = writePipe
+
+	printHelp()
+
+	// Restore standard output
+	os.Stdout = oldStdout
+	writePipe.Close()
+
+	// Read the captured output from the read end of the pipe
+	var outputBytes []byte
+	outputBytes, _ = io.ReadAll(readPipe)
+	output := string(outputBytes)
+
+	expectedHelp := `Possible arguments:
+	--config		Changes default path from where to read the config file.
+	--help			Print this help statement.
+	--version		Print version and build info.`
+
+	if strings.TrimSpace(output) != strings.TrimSpace(expectedHelp) {
+		t.Errorf("Unexpected help message.\nExpected:\n%s\nGot:\n%s", expectedHelp, output)
+	}
+}
 
 func TestReadFile(t *testing.T) {
 	cfg := &config{}
