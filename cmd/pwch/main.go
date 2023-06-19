@@ -135,12 +135,8 @@ func printBuildInfo() {
 	fmt.Printf("  %s\n", buildInfo.GoVersion)
 
 	fmt.Println("Dependencies:")
-	if len(buildInfo.Deps) > 0 {
-		for _, dep := range buildInfo.Deps {
-			fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
-		}
-	} else {
-		fmt.Println("  no external dependencies")
+	for _, dep := range buildInfo.Deps {
+		fmt.Printf("  %s \t %s\n", dep.Path, dep.Version)
 	}
 }
 
