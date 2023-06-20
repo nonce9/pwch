@@ -5,6 +5,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
     golang \
     sudo \
+    curl \
     supervisor \
     postgresql \
     postfix \
@@ -15,9 +16,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && apt-get clean
 
 # copy postgres config files and database sql script
-COPY postgres/postgres.conf /etc/postgresql/15/main/conf.d/custom.conf
-COPY postgres/pg_hba.conf /etc/postgresql/15/main
-COPY postgres/postgres.sql /root
+COPY test/postgres/postgres.conf /etc/postgresql/15/main/conf.d/custom.conf
+COPY test/postgres/pg_hba.conf /etc/postgresql/15/main
+COPY test/postgres/postgres.sql /root
 
 # prepare database
 RUN pg_ctlcluster 15/main start \
@@ -35,18 +36,18 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
     && update-ca-certificates
 
 # configure postfix
-COPY postfix/main.cf /root/main.cf
+COPY test/postfix/main.cf /root/main.cf
 
 RUN cat /root/main.cf >> /etc/postfix/main.cf \
     && sed -i 's/smtpd_tls_cert_file=.*/smtpd_tls_cert_file=\/etc\/ssl\/localhost.crt/' /etc/postfix/main.cf \
     && sed -i 's/smtpd_tls_key_file=.*/smtpd_tls_key_file=\/etc\/ssl\/localhost.key/' /etc/postfix/main.cf \
     && mkdir /etc/postfix/sql
 
-COPY postfix/master.cf /etc/postfix
-COPY postfix/accounts.cf /etc/postfix/sql
-COPY postfix/aliases.cf /etc/postfix/sql
-COPY postfix/domains.cf /etc/postfix/sql
-COPY postfix/sender-login-maps.cf /etc/postfix/sql
+COPY test/postfix/master.cf /etc/postfix
+COPY test/postfix/accounts.cf /etc/postfix/sql
+COPY test/postfix/aliases.cf /etc/postfix/sql
+COPY test/postfix/domains.cf /etc/postfix/sql
+COPY test/postfix/sender-login-maps.cf /etc/postfix/sql
 
 # configure dovecot
 RUN groupadd -g 5000 vmail \
@@ -56,8 +57,8 @@ RUN groupadd -g 5000 vmail \
     && chmod -R 0770 /var/vmail \
     && rm -rf /etc/dovecot/conf.d /etc/dovecot/dovecot-dict-auth.conf.ext /etc/dovecot/dovecot-dict-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext
 
-COPY --chown=root:dovecot --chmod=0640 dovecot/dovecot.conf /etc/dovecot
-COPY --chown=root:dovecot --chmod=0440 dovecot/dovecot-sql.conf /etc/dovecot
+COPY --chown=root:dovecot --chmod=0640 test/dovecot/dovecot.conf /etc/dovecot
+COPY --chown=root:dovecot --chmod=0440 test/dovecot/dovecot-sql.conf /etc/dovecot
 
 # encrypt mailboxes
 ARG PASSWORD=e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716
@@ -68,11 +69,16 @@ RUN pg_ctlcluster 15/main start \
     && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
     && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
 
+# install pwch
+RUN mkdir /etc/pwch /usr/local/src/pwch
+
+COPY --chown=pwch:pwch --chmod=0400 config/config.yml /etc/pwch/config.yml
+ADD assets/html/ /usr/local/src/pwch/
+
 # symlink doveadm_wrapper
-RUN mkdir /pwch \
-    && ln -s /pwch/cmd/doveadm_wrapper/doveadm_wrapper /usr/local/bin/doveadm_wrapper
+RUN ln -s /pwch/cmd/doveadm_wrapper/doveadm_wrapper /usr/local/bin/doveadm_wrapper
 
 # copy supervisord config
-COPY supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY test/supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
