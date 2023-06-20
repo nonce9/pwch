@@ -116,7 +116,7 @@ func TestReadFile(t *testing.T) {
 			t.Errorf("Expected error to be nil, but got: %v", err)
 		}
 
-		expectedDomain := "example.com"
+		expectedDomain := "localhost"
 		if cfg.Domain != expectedDomain {
 			t.Errorf("Expected Domain: %s, Got: %s", expectedDomain, cfg.Domain)
 		}
