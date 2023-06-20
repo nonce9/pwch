@@ -9,8 +9,14 @@ pipeline:
       - mkdir -p /pwch/cmd/doveadm_wrapper
       - mv doveadm_wrapper /pwch/cmd/doveadm_wrapper
       - cd ../pwch
+      - go build
+      - mkdir /pwch/cmd/pwch
+      - mv pwch /pwch/cmd/pwch
       - go install github.com/mattn/goveralls@latest
       - /root/go/bin/goveralls -v -service drone.io
+      - cd ../../test
+      - chmod +x test.sh
+      - ./test.sh
     secrets:
       - coveralls_token
 
