@@ -214,15 +214,18 @@ Due to the external dependencies unit tests must be executed in a prepared envir
 I decided against mocking the dependencies as this would mean pulling in several
 additional Go dependencies and writing a whole bunch of additional test code.
 
-Instead I wrote an arguably disgusting all-in-one container image that is meant to be
-used to run unit tests. However, this container functions as continuous integration test
-as well. 
+Instead I wrote an arguably huge all-in-one container image that is meant to be
+used to run unit and CI tests.
 
 Here's how to run tests:
 
 __INFO__: All listed commands are expected to be run from the repo's root directory.
 
-1. Build the doveadm_wrapper binary
+1. Build the pwch and doveadm_wrapper binaries
+```
+cd cmd/pwch
+go build
+```
 ```
 cd cmd/doveadm_wrapper
 go build
@@ -230,7 +233,6 @@ go build
 
 2. Build the container image
 ```
-cd test
 docker build -t pwch-test .
 ```
 
@@ -243,11 +245,18 @@ Or if you're running on SELinux:
 docker run -d -v ${PWD}:/pwch:Z --name pwch-test pwch-test
 ```
 
-4. Enter the container, navigate to the test file and run the tests
+4. Enter the container, navigate to the test file and run the unit tests
 ```
 docker exec -it pwch-test /bin/bash
 cd pwch/cmd/pwch
 go test -v
+```
+5. Same procedure for the CI test script
+```
+docker exec -it pwch-test /bin/bash
+cd test
+chmod +x test.sh
+./test.sh
 ```
 
 That's it!
