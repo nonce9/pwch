@@ -72,7 +72,7 @@ RUN pg_ctlcluster 15/main start \
 # install pwch
 RUN mkdir /etc/pwch /usr/local/src/pwch
 
-COPY --chown=pwch:pwch --chmod=0400 config/config.yml /etc/pwch/config.yml
+COPY config/config.yml /etc/pwch/config.yml
 ADD assets/html/ /usr/local/src/pwch/
 
 # symlink doveadm_wrapper
