@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
@@ -55,6 +56,8 @@ type config struct {
 	Server     struct {
 		ListenAddress string `yaml:"listen_address"`
 		Port          string `yaml:"port"`
+		CertFile      string `yaml:"cert_file"`
+		KeyFile       string `yaml:"key_file"`
 	} `yaml:"server"`
 	DB struct {
 		Host     string `yaml:"host"`
@@ -635,17 +638,27 @@ func main() {
 	mux.HandleFunc(cfg.URLPrefix+"/changePassword", passwordChangeHandler)
 	mux.HandleFunc(cfg.URLPrefix+"/submitPassword", passwordSubmitHandler)
 
+	cert, err := tls.LoadX509KeyPair(cfg.Server.CertFile, cfg.Server.KeyFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
 	srv := &http.Server{
 		Addr:         cfg.Server.ListenAddress + ":" + cfg.Server.Port,
 		Handler:      mux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
+		TLSConfig:    tlsConfig,
 	}
 
 	log.Printf("pwch %s", version)
 	log.Print("INFO: Listening on " + cfg.Server.ListenAddress + ":" + cfg.Server.Port)
 	go func() {
-		log.Fatal(srv.ListenAndServe())
+		log.Fatal(srv.ListenAndServeTLS("", ""))
 	}()
 
 	ticker := time.NewTicker(30 * time.Second)

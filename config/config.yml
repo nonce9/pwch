@@ -6,6 +6,8 @@ assets_path: /usr/local/src/pwch
 server:
   listen_address: 127.0.0.1
   port: 8080
+  cert_file: /etc/letsencrypt/live/<your_domain>/<cert_file>
+  key_file: /etc/letsencrypt/live/<your_domain>/<key_file>
 
 db:
   host: /run/postgresql
