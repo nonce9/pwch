@@ -1,38 +1,40 @@
 ---
-domain: example.com
-url_prefix: /selfservice
+domain: localhost
+url_prefix: ""  # e.g. /selfservice
 assets_path: /usr/local/src/pwch
 
 server:
-  listen_address: 127.0.0.1
-  port: 8080
-  cert_file: /etc/letsencrypt/live/<your_domain>/<cert_file>
-  key_file: /etc/letsencrypt/live/<your_domain>/<key_file>
+  listen_address: 0.0.0.0
+  port: 443
+  cert_file: /etc/ssl/localhost.crt
+  key_file: /etc/ssl/localhost.key
 
 db:
   host: /run/postgresql
   db_name: vmail
   user: vmail
-  password: vmail_password
+  password: password
   ssl_mode: disable
 
 bcrypt:
   cost: 14  # do NOT change after initial setup
 
 smtp:
-  host: example.com
+  host: localhost
   port: 587
-  login_user: noreply@example.com
-  login_password: noreply_password
-  sender: PWCH <noreply@example.com
+  login_user: noreply@localdomain
+  login_password: password
+  sender: PWCH <noreply@localdomain>
 
+# these values are used for testing
+# these are not sane defaults
 password_policy:
-  min_length: 12
+  min_length: 8
   max_length: 128
   lower_case: true
-  upper_case: true
-  digits: true
-  special_char: true
+  upper_case: false
+  digits: false
+  special_char: false
 
 otl:
   valid_for: 10m
