@@ -4,8 +4,7 @@ url_prefix: /selfservice
 assets_path: /usr/local/src/pwch
 
 server:
-  listen_address: 127.0.0.1
-  port: 8080
+  socket_path: /run/pwch/pwch.sock
 
 db:
   host: /run/postgresql
