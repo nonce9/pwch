@@ -55,7 +55,7 @@ pwch will handle all subsequent reencryptions during a password change.
 Despite significant efforts to secure the application, there is a potential
 vulnerability when calling the doveadm binary to reencrypt mailboxes.
 This vulnerability arises when local attackers possess root permissions
-and the requisite knowledge to intercept passwords that are written via stdin
+and the required knowledge to intercept passwords that are written via stdin
 to the doveadm command.
 It is essential to recognize that the only truly secure method of
 storing emails confidentially is through end-to-end encryption.
