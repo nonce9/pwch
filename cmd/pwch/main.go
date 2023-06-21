@@ -647,7 +647,9 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		os.Remove(cfg.Server.SocketPath)
+		if err := os.Remove(cfg.Server.SocketPath); err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(0)
 	}()
 
