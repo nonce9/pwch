@@ -26,14 +26,17 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 	"net/mail"
 	"net/smtp"
 	"os"
 	"os/exec"
+	"os/signal"
 	"runtime/debug"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unicode"
 
@@ -53,8 +56,7 @@ type config struct {
 	URLPrefix  string `yaml:"url_prefix"`
 	AssetsPath string `yaml:"assets_path"`
 	Server     struct {
-		ListenAddress string `yaml:"listen_address"`
-		Port          string `yaml:"port"`
+		SocketPath string `yaml:"socket_path"`
 	} `yaml:"server"`
 	DB struct {
 		Host     string `yaml:"host"`
@@ -635,17 +637,32 @@ func main() {
 	mux.HandleFunc(cfg.URLPrefix+"/changePassword", passwordChangeHandler)
 	mux.HandleFunc(cfg.URLPrefix+"/submitPassword", passwordSubmitHandler)
 
-	srv := &http.Server{
-		Addr:         cfg.Server.ListenAddress + ":" + cfg.Server.Port,
+	socket, err := net.Listen("unix", cfg.Server.SocketPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Cleanup the sockfile.
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		if err := os.Remove(cfg.Server.SocketPath); err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
+	}()
+
+	server := http.Server{
 		Handler:      mux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
 	log.Printf("pwch %s", version)
-	log.Print("INFO: Listening on " + cfg.Server.ListenAddress + ":" + cfg.Server.Port)
+	log.Print("INFO: Listening on " + cfg.Server.SocketPath)
 	go func() {
-		log.Fatal(srv.ListenAndServe())
+		log.Fatal(server.Serve(socket))
 	}()
 
 	ticker := time.NewTicker(30 * time.Second)
