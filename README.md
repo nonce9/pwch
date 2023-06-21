@@ -12,7 +12,7 @@
   <a href='https://coveralls.io/github/nonce9/pwch?branch=main' title="Coverage Status">
     <img src='https://coveralls.io/repos/github/nonce9/pwch/badge.svg?branch=main' alt='Coverage Status' />
   </a>
-  <img src="https://img.shields.io/badge/Lines_of_code-634-blue" alt="status-badge" />
+  <img src="https://img.shields.io/badge/lines_of_code-634-blue" alt="status-badge" />
   <a href="https://goreportcard.com/report/github.com/nonce9/pwch" title="Go Report">
     <img src="https://goreportcard.com/badge/github.com/nonce9/pwch" alt="status-badge" />
   </a>
