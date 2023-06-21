@@ -165,13 +165,19 @@ and remove all permissions to others.
 # mkdir /usr/local/src/pwch
 ```
 
-6. Copy the pwch binary to `/usr/local/bin/` and run `chmod +x` to make it executable.
+6. Create the socket directory
+```
+# mkdir /run/pwch
+# chown pwch:pwch /run/pwch
+```
 
-7. Copy the doveadm_wrapper binary to `/usr/local/bin/` and first run `chown root:pwch`, then run `chmod 4750` to set the setuid bit.
+7. Copy the pwch binary to `/usr/local/bin/` and run `chmod +x` to make it executable.
 
-8. Copy the [systemd unit file](config/pwch.service) to `/etc/systemd/system/` and run `systemctl daemon-reload`
+8. Copy the doveadm_wrapper binary to `/usr/local/bin/` and first run `chown root:pwch`, then run `chmod 4750` to set the setuid bit.
 
-9. Enable and start the service
+9. Copy the [systemd unit file](config/pwch.service) to `/etc/systemd/system/` and run `systemctl daemon-reload`
+
+10. Enable and start the service
 ```
 # systemctl enable pwch.service
 # systemctl start pwch.service
