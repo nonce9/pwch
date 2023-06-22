@@ -1,0 +1,14 @@
+<svg width="71.901mm" height="16.037mm" version="1.1" viewBox="0 0 71.901 16.037" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(-81.913 -91.285)" fill="#fc0">
+  <g transform="matrix(.11884 -.031977 .031977 .11884 -9.5506 10.31)" fill="#fc0" stroke="#000" stroke-dashoffset="61.599" stroke-linecap="round" stroke-linejoin="round">
+   <g transform="translate(-7.0958,3.5654)" fill="#fc0">
+    <g transform="translate(.0021286 .00057158)" fill="#fc0">
+     <path transform="rotate(66.516)" d="m1042.3-256.84a38.681 38.681 2.3562e-8 0 0-3.4711 16.067 38.681 38.681 2.3562e-8 0 0 38.706 38.632 38.681 38.681 2.3562e-8 0 0 38.655-38.681l8e-4 -0.0998a38.681 38.681 2.3562e-8 0 0-38.756-38.581 38.681 38.681 2.3562e-8 0 0-35.135 22.663zm27.512-7.6766a8.2511 8.2511 23.484 0 1 10.841-4.302l0.02 9e-3a8.2511 8.2511 23.484 0 1 4.2832 10.85 8.2511 8.2511 23.484 0 1-10.848 4.2902 8.2511 8.2511 23.484 0 1-4.2954-10.846z" stroke-width="2.6377"/>
+     <path d="m618.19 893.24-92.691 40.388-3.6531 13.56 14.48 7.0314 14.161-5.515 1.439-8.5498 8.0744 4.4159 3.2168-1.3976 0.0334-5.7804 4.6614 3.7413 5.1934-2.2564-0.62252-7.7122 6.1548 5.2378 46.814-20.269" stroke-width="1.8241"/>
+     <path d="m524.23 939.74 73.459-31.587" stroke-width="2.5"/>
+    </g>
+   </g>
+  </g>
+ </g>
+ <text transform="matrix(.26458 0 0 .26458 -5.1191 -3.4967)" fill="#ffcc00" font-family="'Open Sans'" font-size="33.333px" font-weight="bold" stroke="#000000" stroke-dashoffset="61.599" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" style="shape-inside:url(#rect393);white-space:pre" xml:space="preserve"/>
+</svg>

@@ -32,7 +32,7 @@
 </p>
 <p align="center">
   <a href="https://nonce.at/public.asc" title="Signing Key">
-    <img src="https://img.shields.io/badge/Signing%20Key-ffac3f?style=flat&link=https://nonce.at/public.asc" alt="status-badge" />
+    <img alt="A Key" src="screenshots/key_link.svg" width="200" />
   </a>
 </p>
 
