@@ -45,8 +45,6 @@ selfservice portal and encrypt dovecot mailboxes with per user keys.
 It's suppposed to be run on the same host as your dovecot IMAP server
 installation.
 
------
-
 ## ATTENTION
 
 Be sure to backup important emails BEFORE following the setup instructions.
@@ -65,8 +63,6 @@ and the required knowledge to intercept passwords that are written via stdin
 to the doveadm command.
 It is essential to recognize that the only truly secure method of
 storing emails confidentially is through end-to-end encryption.
-
------
 
 ## What it does
 
@@ -99,8 +95,6 @@ to be installed on the same host.
 
 __Attention__: The wrapper script needs the setuid bit set.
 
------
-
 ## What it looks like
 
 The html and css files are fully customizable. This is what the default looks like.
@@ -108,8 +102,6 @@ The html and css files are fully customizable. This is what the default looks li
 ![Page to submit email address](screenshots/submitEmail.png?raw=true)
 
 ![Page to change password](screenshots/changePassword.png?raw=true)
-
------
 
 ## Requirements
 
@@ -140,8 +132,6 @@ plugin {
 ```
 
 Please take a look at the official [Documentation](https://doc.dovecot.org/configuration_manual/mail_crypt_plugin/)
-
------
 
 ## How to deploy
 
@@ -227,8 +217,6 @@ select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
 ```
 
 3. When the mailbox is encrypted tell your new user to change the password.
-
------
 
 ## How to test
 
