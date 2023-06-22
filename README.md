@@ -1,5 +1,9 @@
-![banner](screenshots/banner.png?raw=true)
-
+<p align="center">
+  <a href="https://github.com/nonce9/pwch">
+    <img alt="pwch" src="screenshots/logo.svg" width="400"/>
+  </a>
+</p>
+<br/>
 <p align="center">
   <a href="https://ci.nonce.at/nonce9/pwch" title="Build Status">
     <img src="https://ci.nonce.at/api/badges/nonce9/pwch/status.svg" alt="status-badge" />
