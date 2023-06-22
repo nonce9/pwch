@@ -32,7 +32,7 @@
 </p>
 <p align="center">
   <a href="https://nonce.at/public.asc" title="Signing Key">
-    <img alt="A Key" src="screenshots/key_link.svg" width="200" />
+    <img alt="A Key" src="screenshots/key_link.svg" width="150" />
   </a>
 </p>
 
