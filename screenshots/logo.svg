@@ -1,16 +1,16 @@
 <svg width="329.18" height="131.56" version="1.1" viewBox="0 0 329.18 131.56" xmlns="http://www.w3.org/2000/svg">
   <style>
-    @media (prefers-color-scheme: dark) {
+    @media (prefers-color-scheme: light) {
       path {
-        fill: white;
-        stroke: white;
+        fill: #000;
+        stroke: #000;
       }
       rect {
-        stroke: white;
+        stroke: #000;
       }
     }
  </style>
- <g transform="matrix(2.5595 0 0 2.5798 -1368.5 -350.75)" stroke="#000" stroke-dashoffset="33.415" stroke-linecap="round" stroke-linejoin="round">
+ <g transform="matrix(2.5595 0 0 2.5798 -1368.5 -350.75)" stroke="#fff" stroke-dashoffset="33.415" stroke-linecap="round" stroke-linejoin="round">
   <rect transform="matrix(.9999 -.014277 .051152 .99869 0 0)" x="528.78" y="147.49" width="123.15" height="45.248" ry="12.622" fill="none" stroke-width="4.4127" style="paint-order:normal"/>
   <g transform="matrix(1.3001 -.018564 .069076 1.3486 -191.89 -69.651)" stroke-width="3.0001" style="shape-inside:url(#rect48349);white-space:pre" aria-label="pwch">
    <path d="m575.21 186.34q-2.4038 0-3.7704-1.7448h-0.19523q0.19523 1.7082 0.19523 1.9767v5.5274h-3.7215v-19.645h3.026l0.52468 1.7693h0.17082q1.3056-2.0255 3.868-2.0255 2.416 0 3.7825 1.8669 1.3666 1.8669 1.3666 5.1857 0 2.1841-0.64669 3.7948-0.63449 1.6106-1.8181 2.4526t-2.782 0.84192zm-1.0982-11.165q-1.3788 0-2.0133 0.85412-0.63449 0.84192-0.6589 2.7942v0.40266q0 2.1963 0.6467 3.148 0.65889 0.95174 2.0743 0.95174 2.5014 0 2.5014-4.1242 0-2.0133-0.62228-3.0138-0.61009-1.0127-1.9279-1.0127z"/>
