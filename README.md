@@ -104,7 +104,7 @@ The html and css files are fully customizable. This is what the default looks li
 ## Requirements
 
 - Local dovecot installation with doveadm
-- PostgreSQL database containing user store
+- PostgreSQL database with pgcrypto extension enabled (contains user store)
 - SMTP server with STARTTLS enabled
 - Optional: AppArmor
 
@@ -210,13 +210,13 @@ INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enable
 3. When the user accounts is present in the database, run:
 
 ```
-# doveadm -o plugin/mail_crypt_private_password=<sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
+# doveadm -o plugin/mail_crypt_private_password=<salted-sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
 ```
 
-__INFO__: To calculate the sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be activated)
+__INFO__: To calculate the salted sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be enabled)
 
 ```
-select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
+select encode(digest('<salt><plain_text_password>', 'sha3-512'), 'hex');
 ```
 
 4. When the mailbox is encrypted tell your new user to change the password.
