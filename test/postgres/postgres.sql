@@ -49,10 +49,10 @@ CREATE TABLE IF NOT EXISTS aliases (
 );
 
 INSERT INTO domains (domain) VALUES ('localdomain');
-INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('noreply', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 10, true, true);  -- nosemgrep
-INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('pwch1', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);  -- nosemgrep
-INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('pwch2', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);  -- nosemgrep
-INSERT INTO accounts (username, domain, password, quota, enabled, sendonly) VALUES ('pwch3', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', 2048, true, false);  -- nosemgrep
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('noreply', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 10, true, true);  -- nosemgrep
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('pwch1', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);  -- nosemgrep
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('pwch2', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);  -- nosemgrep
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('pwch3', 'localdomain', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);  -- nosemgrep
 
 ALTER TABLE domains OWNER TO vmail;
 ALTER TABLE accounts OWNER TO vmail;
