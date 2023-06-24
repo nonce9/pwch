@@ -304,7 +304,7 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func checkPasswordHash(password string, hash string) bool {
+func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	if err != nil {
 		log.Print(err)
@@ -313,7 +313,7 @@ func checkPasswordHash(password string, hash string) bool {
 	return true
 }
 
-func passwordMatches(username string, domain string, oldPass string) bool {
+func passwordMatches(username, domain, oldPass string) bool {
 	var db = connectToDatabase()
 
 	var hash string
