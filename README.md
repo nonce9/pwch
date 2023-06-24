@@ -204,7 +204,7 @@ __ATTENTION__: Remove the `{BLF-CRYPT}` prefix before inserting the password int
 
 2. Insert new user into database, e.g.
 ```
-INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('user', 'example.org', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('user', 'example.org', '$2y$14$28LTS...Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);
 ```
 
 3. When the user accounts is present in the database, run:
