@@ -60,13 +60,16 @@ COPY --chown=root:dovecot --chmod=0640 dovecot/dovecot.conf /etc/dovecot
 COPY --chown=root:dovecot --chmod=0440 dovecot/dovecot-sql.conf /etc/dovecot
 
 # encrypt mailboxes
+ARG SALT1=9ba8d8b8f64c33348a2f0efcd2e34c47c465c97e629340c4305a30a8fe7bfc87
+ARG SALT2=336a1786cadc9c610118d5e6160f7e7eb67085bbd5212f487fc5179605167e42
+ARG SALT3=bd73a0fb00ab72f8f59ec7ca2e4564b7cbc03a8376c04d4255bdc0b37f57e5c5
 ARG PASSWORD=e9a75486736a550af4fea861e2378305c4a555a05094dee1dca2f68afea49cc3a50e8de6ea131ea521311f4d6fb054a146e8282f8e35ff2e6368c1a62e909716
 
 RUN pg_ctlcluster 15/main start \
     && /usr/sbin/dovecot -c /etc/dovecot/dovecot.conf \
-    && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch1@localdomain -U \
-    && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
-    && /bin/doveadm -o plugin/mail_crypt_private_password=$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
+    && /bin/doveadm -o plugin/mail_crypt_private_password=$SALT1$PASSWORD mailbox cryptokey generate -u pwch1@localdomain -U \
+    && /bin/doveadm -o plugin/mail_crypt_private_password=$SALT2$PASSWORD mailbox cryptokey generate -u pwch2@localdomain -U \
+    && /bin/doveadm -o plugin/mail_crypt_private_password=$SALT3$PASSWORD mailbox cryptokey generate -u pwch3@localdomain -U
 
 # symlink doveadm_wrapper
 RUN mkdir /pwch \
