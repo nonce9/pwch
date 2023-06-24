@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS accounts (
     username varchar(64) NOT NULL,
     domain varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
+    mail_crypt_salt VARCHAR(255) NOT NULL,
     quota int check (quota > 0) DEFAULT '0',
     enabled boolean DEFAULT '0',
     sendonly boolean DEFAULT '0',
