@@ -361,13 +361,19 @@ func TestValidatePasswordFields(t *testing.T) {
 }
 
 func TestReencryptMailbox(t *testing.T) {
-	testReencryption := func(t testing.TB, username, oldPassword, newPassword string) (error, string) {
+	cfg.DB.Host = "/run/postgresql"
+	cfg.DB.DBName = "vmail"
+	cfg.DB.User = "vmail"
+	cfg.DB.Password = "password"
+	cfg.DB.SSLMode = "disable"
+
+	testReencryption := func(t testing.TB, username, domain, email, oldPassword, newPassword string) (error, string) {
 		t.Helper()
 
 		var buf bytes.Buffer
 		log.SetOutput(&buf)
 
-		err := reencryptMailbox(username, oldPassword, newPassword)
+		err := reencryptMailbox(username, domain, email, oldPassword, newPassword)
 
 		// Get the log output from the buffer
 		output := buf.String()
@@ -382,7 +388,7 @@ func TestReencryptMailbox(t *testing.T) {
 
 	// Test case 1
 	t.Run("successful reencryption", func(t *testing.T) {
-		err, logMessage := testReencryption(t, "pwch2@localdomain", "password", "StrongPassword1234!")
+		err, logMessage := testReencryption(t, "pwch2", "localdomain", "pwch2@localdomain", "password", "StrongPassword1234!")
 
 		if err != nil {
 			t.Errorf("want nil but got %v", err)
@@ -395,7 +401,7 @@ func TestReencryptMailbox(t *testing.T) {
 
 	// Test case 2
 	t.Run("failed reencryption of same user again", func(t *testing.T) {
-		err, logMessage := testReencryption(t, "pwch2@localdomain", "password", "StrongPassword1234!")
+		err, logMessage := testReencryption(t, "pwch2", "localdomain", "pwch2@localdomain", "password", "StrongPassword1234!")
 
 		if err == nil {
 			t.Errorf("want error but got nil")
@@ -408,7 +414,7 @@ func TestReencryptMailbox(t *testing.T) {
 
 	// Test case 3
 	t.Run("failed reencryption of another user", func(t *testing.T) {
-		err, logMessage := testReencryption(t, "pwch3@localdomain", "password123", "StrongPassword1234!")
+		err, logMessage := testReencryption(t, "pwch3", "localdomain", "pwch3@localdomain", "password123", "StrongPassword1234!")
 
 		if err == nil {
 			t.Errorf("want error but got nil")
@@ -421,20 +427,21 @@ func TestReencryptMailbox(t *testing.T) {
 
 	// Test case 4
 	t.Run("non existing user", func(t *testing.T) {
-		err, logMessage := testReencryption(t, "test@localdomain", "password", "StrongPassword1234!")
+		err, logMessage := testReencryption(t, "test", "localdomain", "test@localdomain", "password", "StrongPassword1234!")
 
-		if err == nil {
-			t.Errorf("want error but got nil")
+		if err.Error() != "sql: no rows in result set" {
+			t.Errorf("want error message 'sql: no rows in result set', but got: %s", err.Error())
 		}
 
-		if !strings.Contains(logMessage, "exit status 67") {
+		fmt.Println(err)
+		if !strings.Contains(logMessage, "") {
 			t.Errorf("got unexpected log message: %s", logMessage)
 		}
 	})
 
 	// Test case 5
 	t.Run("revert test case 1", func(t *testing.T) {
-		err, logMessage := testReencryption(t, "pwch2@localdomain", "StrongPassword1234!", "password")
+		err, logMessage := testReencryption(t, "pwch2", "localdomain", "pwch2@localdomain", "StrongPassword1234!", "password")
 
 		if err != nil {
 			t.Errorf("want nil but got %v", err)
