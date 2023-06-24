@@ -202,7 +202,12 @@ have to execute these steps manually.
 
 __ATTENTION__: Remove the `{BLF-CRYPT}` prefix before inserting the password into the database.
 
-2. When the user accounts is present in the database, run:
+2. Insert new user into database, e.g.
+```
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('user', 'example.org', '$2y$05$28LTdSX2gZB/vWBfDNlF9u1W7sJmXM8y4r2lmE4E/UrHI0Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);
+```
+
+3. When the user accounts is present in the database, run:
 
 ```
 # doveadm -o plugin/mail_crypt_private_password=<sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
@@ -214,7 +219,7 @@ __INFO__: To calculate the sha3-512 hash of the password run this command inside
 select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
 ```
 
-3. When the mailbox is encrypted tell your new user to change the password.
+4. When the mailbox is encrypted tell your new user to change the password.
 
 ## How to test
 
