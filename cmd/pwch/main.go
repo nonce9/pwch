@@ -304,7 +304,7 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func checkPasswordHash(password string, hash string) bool {
+func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	if err != nil {
 		log.Print(err)
@@ -313,7 +313,7 @@ func checkPasswordHash(password string, hash string) bool {
 	return true
 }
 
-func passwordMatches(username string, domain string, oldPass string) bool {
+func passwordMatches(username, domain, oldPass string) bool {
 	var db = connectToDatabase()
 
 	var hash string
@@ -334,9 +334,19 @@ func passwordMatches(username string, domain string, oldPass string) bool {
 	return false
 }
 
-func reencryptMailbox(email, oldPass, newPass string) error {
-	oldHash := sha3.Sum512([]byte(oldPass))
-	newHash := sha3.Sum512([]byte(newPass))
+func reencryptMailbox(username, domain, email, oldPass, newPass string) error {
+	var db = connectToDatabase()
+
+	var mail_crypt_salt string
+	if err := db.QueryRow("SELECT mail_crypt_salt FROM accounts WHERE username = $1 AND domain = $2;",
+		username, domain).Scan(&mail_crypt_salt); err != nil {
+		_ = closeDatabase(db)
+		return err
+	}
+	_ = closeDatabase(db)
+
+	oldHash := sha3.Sum512([]byte(mail_crypt_salt + oldPass))
+	newHash := sha3.Sum512([]byte(mail_crypt_salt + newPass))
 
 	oldHashString := hex.EncodeToString(oldHash[:])
 	newHashString := hex.EncodeToString(newHash[:])
@@ -587,7 +597,7 @@ func updatePassword(username, domain, newPass, oldPass string) error {
 	}
 
 	email := username + "@" + domain
-	if err = reencryptMailbox(email, oldPass, newPass); err != nil {
+	if err = reencryptMailbox(username, domain, email, oldPass, newPass); err != nil {
 		return errors.New("Internal error: Password not changed")
 	}
 

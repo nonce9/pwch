@@ -20,7 +20,7 @@
   <a href='https://coveralls.io/github/nonce9/pwch?branch=main' title="Coverage Status">
     <img src='https://coveralls.io/repos/github/nonce9/pwch/badge.svg?branch=main' alt='Coverage Status' />
   </a>
-    <img src="https://img.shields.io/badge/lines_of_code-634-blue" alt="status-badge" />
+    <img src="https://img.shields.io/badge/lines_of_code-642-blue" alt="status-badge" />
   <a href="https://goreportcard.com/report/github.com/nonce9/pwch" title="Go Report">
     <img src="https://goreportcard.com/badge/github.com/nonce9/pwch" alt="status-badge" />
   </a>
@@ -104,7 +104,7 @@ The html and css files are fully customizable. This is what the default looks li
 ## Requirements
 
 - Local dovecot installation with doveadm
-- PostgreSQL database containing user store
+- PostgreSQL database with pgcrypto extension enabled (contains user store)
 - SMTP server with STARTTLS enabled
 - Optional: AppArmor
 
@@ -202,19 +202,24 @@ have to execute these steps manually.
 
 __ATTENTION__: Remove the `{BLF-CRYPT}` prefix before inserting the password into the database.
 
-2. When the user accounts is present in the database, run:
-
+2. Insert new user into database, e.g.
 ```
-# doveadm -o plugin/mail_crypt_private_password=<sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
-```
-
-__INFO__: To calculate the sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be activated)
-
-```
-select encode(digest('<plain_text_password>', 'sha3-512'), 'hex');
+INSERT INTO accounts (username, domain, password, mail_crypt_salt, quota, enabled, sendonly) VALUES ('user', 'example.org', '$2y$14$28LTS...Fo1YMNK', ENCODE(gen_random_bytes(32), 'hex'), 2048, true, false);
 ```
 
-3. When the mailbox is encrypted tell your new user to change the password.
+3. When the user accounts is present in the database, run:
+
+```
+# doveadm -o plugin/mail_crypt_private_password=<salted-sha3-512-hashed password> mailbox cryptokey generate -u <user@example.org> -U
+```
+
+__INFO__: To calculate the salted sha3-512 hash of the password run this command inside postgres cli (pgcrypto must be enabled)
+
+```
+select encode(digest('<salt><plain_text_password>', 'sha3-512'), 'hex');
+```
+
+4. When the mailbox is encrypted tell your new user to change the password.
 
 ## How to test
 
