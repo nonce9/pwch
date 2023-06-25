@@ -2,44 +2,41 @@
 pipeline:
   build_pwch:
     group: build
-    image: registry.fedoraproject.org/fedora-minimal:latest
+    image: golang
     pull: true
     environment:
       - CGO=0
       - GOOS=linux
       - GOARCH=amd64
     commands:
-      - microdnf install -y --nodocs golang
       - cd cmd/pwch
       - go get
       - go build -ldflags "-X main.version=${CI_COMMIT_TAG}"
 
   build_doveadm_wrapper:
     group: build
-    image: registry.fedoraproject.org/fedora-minimal:latest
+    image: golang
     pull: true
     environment:
       - CGO=0
       - GOOS=linux
       - GOARCH=amd64
     commands:
-      - microdnf install -y --nodocs golang
       - cd cmd/doveadm_wrapper
       - go build -ldflags "-X main.version=${CI_COMMIT_TAG}"
 
   generate_changelog:
-    image: registry.fedoraproject.org/fedora-minimal:latest
+    image: golang
     pull: true
     commands:
-      - microdnf install -y --nodocs git python3-pip
+      - apt update && apt install -y python3-pip
       - pip3 install commitizen
       - cz changelog ${CI_COMMIT_TAG} --file-name="CHANGELOG.md"
 
   sign_checksums:
-    image: registry.fedoraproject.org/fedora-minimal:latest
+    image: golang
     pull: true
     commands:
-      - microdnf install -y git
       - gpg --import <(echo "$GPG_RELEASE_KEY")
       - cd cmd/pwch
       - sha256sum pwch > sha256sum.txt
