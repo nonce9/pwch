@@ -34,7 +34,7 @@ pipeline:
       - cz changelog ${CI_COMMIT_TAG} --file-name="CHANGELOG.md"
 
   sign_checksums:
-    image: golang
+    image: registry.fedoraproject.org/fedora-minimal
     pull: true
     commands:
       - gpg --import <(echo "$GPG_RELEASE_KEY")
